@@ -1,8 +1,14 @@
 ﻿<Window x:Class="bsk___proba_2.UserWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="UserWindow" Height="300" Width="300">
+        Title="UserWindow" Height="206.667" Width="394.667">
     <Grid>
-        
+        <ListBox HorizontalAlignment="Left" Height="100" Margin="16,27,0,0" VerticalAlignment="Top" Width="100">
+            <ListBoxItem Content="Tabela1"/>
+            <ListBoxItem Content="Tabela2"/>
+        </ListBox>
+        <Button Content="Wyswietl tabelę" HorizontalAlignment="Left" Margin="175,35,0,0" VerticalAlignment="Top" Width="92" Click="Button_Click"/>
+        <Button Content="Usuń tabelę" HorizontalAlignment="Left" Margin="175,92,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False"/>
+
     </Grid>
 </Window>

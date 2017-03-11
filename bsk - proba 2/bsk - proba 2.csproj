@@ -53,6 +53,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="OknoTabeli.xaml.cs">
+      <DependentUpon>OknoTabeli.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Tworzenie tunelu ssh.xaml.cs">
       <DependentUpon>Tworzenie tunelu ssh.xaml</DependentUpon>
     </Compile>
@@ -74,6 +77,10 @@
       <DependentUpon>Logowanie.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="OknoTabeli.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Tworzenie tunelu ssh.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
