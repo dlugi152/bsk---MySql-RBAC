@@ -1,0 +1,9 @@
+﻿<Window x:Class="bsk___proba_2.Tworzenie_tunelu_ssh"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Tworzenie_tunelu_ssh" Height="300" Width="300">
+    <Grid>
+        <Button Content="Tworzenie tunelu ssh" HorizontalAlignment="Left" Margin="76,111,0,0" VerticalAlignment="Top" Width="121" Click="Button_Click"/>
+
+    </Grid>
+</Window>
