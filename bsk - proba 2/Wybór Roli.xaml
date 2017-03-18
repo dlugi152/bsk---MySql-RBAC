@@ -1,0 +1,13 @@
+﻿<Window x:Class="bsk___proba_2.Wybór_Roli"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Wybór_Roli" Height="300" Width="300">
+    <Grid>
+        <ComboBox HorizontalAlignment="Left" Margin="95,69,0,0" VerticalAlignment="Top" Width="120">
+            <ComboBoxItem Content="Rola1" HorizontalAlignment="Left" Width="118"/>
+            <ComboBoxItem Content="Rola2" HorizontalAlignment="Left" Width="118"/>
+        </ComboBox>
+        <Button Content="Wybierz tą rolę" HorizontalAlignment="Left" Margin="112,125,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+
+    </Grid>
+</Window>
