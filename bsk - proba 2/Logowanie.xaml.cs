@@ -21,6 +21,7 @@ namespace bsk___proba_2
                 Close();
             }
             else {
+                Hide();
                 UserWindow win2 = new UserWindow();
                 win2.Show();
                 Close();

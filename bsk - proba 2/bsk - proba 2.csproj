@@ -56,14 +56,14 @@
     <Compile Include="OknoTabeli.xaml.cs">
       <DependentUpon>OknoTabeli.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Tworzenie tunelu ssh.xaml.cs">
-      <DependentUpon>Tworzenie tunelu ssh.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UserPermission.xaml.cs">
       <DependentUpon>UserPermission.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserWindow.xaml.cs">
       <DependentUpon>UserWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Wybór Roli.xaml.cs">
+      <DependentUpon>Wybór Roli.xaml</DependentUpon>
     </Compile>
     <Page Include="Logowanie.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -81,15 +81,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Tworzenie tunelu ssh.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="UserPermission.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Wybór Roli.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
