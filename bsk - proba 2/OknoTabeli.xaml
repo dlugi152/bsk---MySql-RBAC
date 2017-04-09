@@ -2,14 +2,14 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Widok Tabeli" Height="338.372" Width="248.836" MinHeight="338" MinWidth="250" SizeToContent="WidthAndHeight">
-    <Grid Margin="0,25,0,0" SizeChanged="Pop">
+    <Grid x:Name="calyGrid" Margin="0,0,0,0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="Szerokosc1" Width="Auto"/>
             <ColumnDefinition x:Name="Szerokosc2" Width="Auto"/>
             <ColumnDefinition x:Name="Szerokosc3" Width="Auto"/>
         </Grid.ColumnDefinitions>
         <DataGrid  Name="TabelaDataGrid" AutoGenerateColumns="True" SelectionChanged="Przestępcy_SelectionChanged" Grid.ColumnSpan="3"
-                   Grid.Column="0" BeginningEdit="TabelaDataGrid_BeginningEdit">
+                   Grid.Column="0" BeginningEdit="TabelaDataGrid_BeginningEdit" Margin="0,25,0,0">
             <DataGrid.ContextMenu>
                 <ContextMenu >
                     <MenuItem x:Name="edytujMenuItem" Header="Edytuj" Click="MenuItem_Click"  />
@@ -17,12 +17,12 @@
                 </ContextMenu>
             </DataGrid.ContextMenu>
         </DataGrid>
-        <Button x:Name="edytujButton" Grid.Column="0" Content="Edytuj" HorizontalAlignment="Left" VerticalAlignment="Top"
-                Width="75" Height="20" Margin="0,-25,0,0" Click="Button_Click_2"/>
-        <Button x:Name="usunButton" Content="Usuń" HorizontalAlignment="Center" VerticalAlignment="Top" Width="75"
-                Grid.Column="1" Height="20" Margin="0,-25,0,0" Click="Button_Click_1"/>
-        <Button x:Name="dodajButton" Content="Dodaj" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Top"
-                Width="75" Height="20" Margin="0,-25,0,0" Click="Button_Click"/>
+        <Button x:Name="edytujButton" Grid.Column="0" Content="Edytuj" HorizontalAlignment="Center" VerticalAlignment="Top"
+                Width="80" Height="20" Margin="0,0,0,0" Click="Button_Click_2"/>
+        <Button x:Name="usunButton" Content="Usuń" HorizontalAlignment="Center" VerticalAlignment="Top" Width="80"
+                Grid.Column="1" Height="20" Margin="0,0,0,0" Click="Button_Click_1"/>
+        <Button x:Name="dodajButton" Content="Dodaj" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Top"
+                Width="80" Height="20" Margin="0,0,0,0" Click="Button_Click"/>
     </Grid>
 </Window>
 

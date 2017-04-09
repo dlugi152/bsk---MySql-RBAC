@@ -74,11 +74,6 @@ namespace bsk___proba_2
             PrzeladujDane();
         }
 
-        private void Pop(object sender, SizeChangedEventArgs e)
-        {
-            Szerokosc1.Width = Szerokosc2.Width = Szerokosc3.Width = GridLength.Auto;
-        }
-
         //dodawanie
         private void Button_Click(object sender, RoutedEventArgs e) {
             List<KeyValuePair<string, string>> kolWart = new List<KeyValuePair<string, string>>();
@@ -116,12 +111,9 @@ namespace bsk___proba_2
                     MessageBox.Show("Musisz zaznaczyć jakiś wiersz, jeśli chcesz go edytować");
                     break;
                 case 1:
-                    for (var i = 0; i < zaznaczone.Count; i++) {
-                        var o = (IDictionary<string, object>) zaznaczone[i];
+                    foreach (IDictionary<string, object> t in zaznaczone)
                         TabelaDataGrid_BeginningEdit(null,
-                            new DataGridBeginningEditEventArgs(TabelaDataGrid.Columns[0], new DataGridRow {Item = o},
-                                new RoutedEventArgs()));//ważne, że działa
-                    }
+                            new DataGridBeginningEditEventArgs(TabelaDataGrid.Columns[0], new DataGridRow {Item = t},null)); //ważne, że działa
                     //nie trzeba przeładowywać
                     break;
                 default:
