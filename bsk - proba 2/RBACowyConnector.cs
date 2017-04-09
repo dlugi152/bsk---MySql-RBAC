@@ -98,11 +98,14 @@ namespace bsk___proba_2 {
             ZamknijPolaczenie();
         }
 
-        public static void Update(string tabela, List<KeyValuePair<string, string>> kolAtr, string kluczGlowny, string idUpdate) {
+        public static void Update(string tabela, List<KeyValuePair<string, string>> kolAtr, List<KeyValuePair<string, string>> kluczGlowny)
+        {
             string zapytanie = "UPDATE " + tabela + " SET ";
             zapytanie = kolAtr.Aggregate(zapytanie, (current, pair) => current + pair.Key + "='" + pair.Value + "', ");
             zapytanie = zapytanie.Remove(zapytanie.Length - 2); //usuwanie niepotrzebnego przecinka i spacji z poprzedniej pętli
-            zapytanie += " WHERE " + kluczGlowny + "='" + idUpdate + "'";
+            zapytanie += " WHERE ";
+            zapytanie = kluczGlowny.Aggregate(zapytanie, (current, pair) => current + "(" + pair.Key + " = " + pair.Value + ") AND ");
+            zapytanie = zapytanie.Remove(zapytanie.Length - 5);
 
             if (OtworzPolaczenie() && CanUpdate(tabela)) {//todo poprawić takie warunki chyba
                 MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
@@ -113,9 +116,11 @@ namespace bsk___proba_2 {
             ZamknijPolaczenie();
         }
 
-        public static void Delete(string tabela,string nazwa_id, string idDelete) {
-            string zapytanie = "DELETE FROM " + tabela + " WHERE " +
-                               nazwa_id + "='" + idDelete + "'";
+        public static void Delete(string tabela, List<KeyValuePair<string, string>> kluczGlowny)
+        {
+            string zapytanie = "DELETE FROM " + tabela + " WHERE ";
+            zapytanie = kluczGlowny.Aggregate(zapytanie, (current, pair) => current + "(" + pair.Key + " = " + pair.Value + ") AND ");
+            zapytanie = zapytanie.Remove(zapytanie.Length - 5);
 
             if (OtworzPolaczenie() && CanDelete(tabela)) {
                 MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
@@ -148,19 +153,19 @@ namespace bsk___proba_2 {
         }
 
         //działa tylko dla kluczy prostych
-        public static string KluczGlowny(string tabela) {
+        public static List<string> KluczGlowny(string tabela) {
             string zapytanie = "SELECT COLUMN_NAME FROM information_schema.columns " +
                 "WHERE (`TABLE_NAME` = \'"+tabela+"\')  AND (`COLUMN_KEY` = \'PRI\');";
 
-            string glowny = "";
+            List<string> glowny = new List<string>();
 
             if (OtworzPolaczenie() && CanSelect(tabela))//chyba select?
             {
                 MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
                 MySqlDataReader dataReader = cmd.ExecuteReader();
 
-                dataReader.Read();
-                glowny = dataReader.GetString(0);
+                while(dataReader.Read())
+                    glowny.Add(dataReader.GetString(0));
 
                 dataReader.Close();
             }

@@ -11,7 +11,7 @@ namespace bsk___proba_2
     /// Logika interakcji dla klasy OknoTabeli.xaml
     /// </summary>
     public partial class OknoTabeli : Window {
-        private string kluczGlowny;
+        private List<string> kluczGlowny;
         private string tabela;
         public OknoTabeli()
         {
@@ -80,7 +80,7 @@ namespace bsk___proba_2
             dynamic exo = new System.Dynamic.ExpandoObject();
             foreach (DataGridColumn kolumna in TabelaDataGrid.Columns) {
                 string klucz = kolumna.Header.ToString();
-                if (kluczGlowny != kolumna.Header.ToString()) //wygodne, bo nie mamy kluczy złożonych
+                if (!kluczGlowny.Contains(kolumna.Header.ToString()))
                 {
                     var w = new ProstyTextBox(klucz); //a to niewygodne
                     if (w.ShowDialog() == true)
@@ -94,9 +94,11 @@ namespace bsk___proba_2
         private void Button_Click_1(object sender, RoutedEventArgs e) {
             var zaznaczone = TabelaDataGrid.SelectedItems;
             if (zaznaczone.Count > 0) {
+                var idKlucza = new List<KeyValuePair<string, string>>();
                 foreach (object o in zaznaczone) {
-                    string idDoUsuniecia = ((IDictionary<string, object>) o)[kluczGlowny].ToString();
-                    RBACowyConnector.Delete(tabela, kluczGlowny, idDoUsuniecia);
+                    foreach (var s in kluczGlowny)
+                        idKlucza.Add(new KeyValuePair<string, string>(s, ((IDictionary<string, object>) o)[s].ToString()));
+                    RBACowyConnector.Delete(tabela,idKlucza);
                 }
                 PrzeladujDane();
             }
@@ -125,9 +127,13 @@ namespace bsk___proba_2
         private void TabelaDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e) {
             IDictionary<string, object> wiersz = (IDictionary<string, object>)e.Row.Item;
             var kolWart = new List<KeyValuePair<string, string>>();
+            var idKlucza = new List<KeyValuePair<string, string>>();
             foreach (var kolumna in TabelaDataGrid.Columns) {
                 string nazwaKolumny = kolumna.Header.ToString();
-                if (nazwaKolumny == kluczGlowny) continue;//klucz główny nie może być edytowany
+                if (kluczGlowny.Contains(nazwaKolumny)) {
+                    idKlucza.Add(new KeyValuePair<string, string>(nazwaKolumny, wiersz[nazwaKolumny].ToString()));
+                    continue;
+                }
                 var w = new ProstyTextBox(nazwaKolumny, wiersz[nazwaKolumny].ToString());
                 if (w.ShowDialog() == true) {
                     wiersz[nazwaKolumny] = w.TextDoPrzekazania;
@@ -135,7 +141,7 @@ namespace bsk___proba_2
                     e.Row.Item = wiersz;
                 }
             }
-            RBACowyConnector.Update(tabela, kolWart, kluczGlowny, wiersz[kluczGlowny].ToString());
+            RBACowyConnector.Update(tabela, kolWart, idKlucza);
             PrzeladujDane();
             e.Cancel = true;//ta jasne, true...
         }
