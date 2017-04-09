@@ -8,7 +8,7 @@
             <ColumnDefinition x:Name="Szerokosc2" Width="Auto"/>
             <ColumnDefinition x:Name="Szerokosc3" Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <DataGrid  Name="TabelaDataGrid" AutoGenerateColumns="True" SelectionChanged="Przestępcy_SelectionChanged" Grid.ColumnSpan="3"
+        <DataGrid  Name="TabelaDataGrid" AutoGenerateColumns="True" Grid.ColumnSpan="3"
                    Grid.Column="0" BeginningEdit="TabelaDataGrid_BeginningEdit" Margin="0,25,0,0">
             <DataGrid.ContextMenu>
                 <ContextMenu >

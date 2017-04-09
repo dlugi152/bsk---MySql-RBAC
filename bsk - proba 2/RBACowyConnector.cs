@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using MySql.Data.MySqlClient;
@@ -7,28 +8,41 @@ namespace bsk___proba_2 {
     public class RBACowyConnector {
         private static MySqlConnection polaczenie;
         private static string serwer;
-        private static string bazaDanych;
         private static string login;
         private static string haslo;
         private static string port;
         private static int idRoli = -1;
+        private const string NazwaBazy = "bsk";
+
+        public enum KodyBledow {
+            BlednyLoginHaslo,
+            BladLaczenia,
+            InnyBlad,
+            NieMoznaZamknac,
+            BrakInsert,
+            BrakSelect,
+            BrakDelete,
+            BrakUpdate
+        }
+
+        public class Bledy : Exception {
+            public KodyBledow Kod;
+            public Bledy(KodyBledow kod) {
+                Kod = kod;
+            }
+        }
 
         static RBACowyConnector() {
 
         }
 
-        /*static RBACowyConnector(string serwer, string bazaDanych, string login, string haslo, string port) {
-            Inicjalizuj(serwer, bazaDanych, login, haslo, port);
-        }*/
-
-        public static void Inicjalizuj(string serwer, string bazaDanych, string login, string haslo, string port) {
+        public static void Inicjalizuj(string serwer, string login, string haslo, string port) {
             RBACowyConnector.serwer = serwer;
-            RBACowyConnector.bazaDanych = bazaDanych;
             RBACowyConnector.login = login;
             RBACowyConnector.haslo = haslo;
             RBACowyConnector.port = port;
             var connectionString = "SERVER=" + RBACowyConnector.serwer + ";" + "DATABASE=" +
-                                   RBACowyConnector.bazaDanych + ";" + "UID=" + RBACowyConnector.login + ";" + "PASSWORD=" +
+                                   NazwaBazy + ";" + "UID=" + RBACowyConnector.login + ";" + "PASSWORD=" +
                                    RBACowyConnector.haslo + ";" +
                                    "PORT=" + RBACowyConnector.port;
 
@@ -53,18 +67,12 @@ namespace bsk___proba_2 {
             catch (MySqlException ex) {
                 switch (ex.Number) {
                     case 0:
-                        MessageBox.Show(
-                            "Nie można połączyć się z bazą. Upewnij się, że wszystkie pola w formularzu są poprawne");
-                        break;
-
+                        throw new Bledy(KodyBledow.BladLaczenia);
                     case 1045:
-                        MessageBox.Show("Nieprawidłowy login lub hasło");
-                        break;
+                        throw new Bledy(KodyBledow.BlednyLoginHaslo);
                     default:
-                        MessageBox.Show("Wystąpił nieznany błąd. Spróbuj ponownie lub uruchom aplikację jeszcze raz");
-                        break;
+                        throw new Bledy(KodyBledow.InnyBlad);
                 }
-                return false;
             }
         }
 
@@ -73,70 +81,82 @@ namespace bsk___proba_2 {
                 polaczenie.Close();
                 return true;
             }
-            catch (MySqlException ex) {
-                MessageBox.Show(ex.Message);
-                return false;
+            catch (MySqlException) {
+                throw new Bledy(KodyBledow.NieMoznaZamknac);
             }
         }
 
-        //todo możemy pomyśleć o przeciążaniu tych funkcji, jeśli to będzie potrzebne
         public static void Insert(string tabela, List<KeyValuePair<string, string>> kolAtr) {
             string zapytanie = "INSERT INTO " + tabela + " (";
             zapytanie = kolAtr.Aggregate(zapytanie, (current, pair) => current + pair.Key + ", ");
-            zapytanie=zapytanie.Remove(zapytanie.Length - 2); //usuwanie niepotrzebnego przecinka i spacji z poprzedniej pętli
+            zapytanie = zapytanie.Remove(zapytanie.Length - 2);
+            //usuwanie niepotrzebnego przecinka i spacji z poprzedniej pętli
             zapytanie += ") VALUES(";
             zapytanie = kolAtr.Aggregate(zapytanie, (current, pair) => current + ("'" + pair.Value + "', "));
             zapytanie = zapytanie.Remove(zapytanie.Length - 2);
             zapytanie += ")";
 
-            if (OtworzPolaczenie() && CanInsert(tabela)) {
-                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                cmd.ExecuteNonQuery();
+            if (OtworzPolaczenie()) {
+                if (CanInsert(tabela)) {
+                    MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+                    cmd.ExecuteNonQuery();
+                }
+                else {
+                    ZamknijPolaczenie();
+                    throw new Bledy(KodyBledow.BrakInsert);
+                }
+                ZamknijPolaczenie();
             }
-            else
-                MessageBox.Show("Nie masz uprawnień do insertowania");
-            ZamknijPolaczenie();
         }
 
-        public static void Update(string tabela, List<KeyValuePair<string, string>> kolAtr, List<KeyValuePair<string, string>> kluczGlowny)
-        {
+        public static void Update(string tabela, List<KeyValuePair<string, string>> kolAtr,
+            List<KeyValuePair<string, string>> kluczGlowny) {
             string zapytanie = "UPDATE " + tabela + " SET ";
             zapytanie = kolAtr.Aggregate(zapytanie, (current, pair) => current + pair.Key + "='" + pair.Value + "', ");
-            zapytanie = zapytanie.Remove(zapytanie.Length - 2); //usuwanie niepotrzebnego przecinka i spacji z poprzedniej pętli
+            zapytanie = zapytanie.Remove(zapytanie.Length - 2);
+            //usuwanie niepotrzebnego przecinka i spacji z poprzedniej pętli
             zapytanie += " WHERE ";
-            zapytanie = kluczGlowny.Aggregate(zapytanie, (current, pair) => current + "(" + pair.Key + " = " + pair.Value + ") AND ");
+            zapytanie = kluczGlowny.Aggregate(zapytanie,
+                (current, pair) => current + "(" + pair.Key + " = " + pair.Value + ") AND ");
             zapytanie = zapytanie.Remove(zapytanie.Length - 5);
 
-            if (OtworzPolaczenie() && CanUpdate(tabela)) {//todo poprawić takie warunki chyba
-                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                cmd.ExecuteNonQuery();
+            if (OtworzPolaczenie()) {
+                if (CanUpdate(tabela)) {
+                    MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+                    cmd.ExecuteNonQuery();
+                }
+                else {
+                    ZamknijPolaczenie();
+                    throw new Bledy(KodyBledow.BrakUpdate);
+                }
+                ZamknijPolaczenie();
             }
-            else
-                MessageBox.Show("Nie masz uprawnień do updateowania");
-            ZamknijPolaczenie();
         }
 
-        public static void Delete(string tabela, List<KeyValuePair<string, string>> kluczGlowny)
-        {
+        public static void Delete(string tabela, List<KeyValuePair<string, string>> kluczGlowny) {
             string zapytanie = "DELETE FROM " + tabela + " WHERE ";
-            zapytanie = kluczGlowny.Aggregate(zapytanie, (current, pair) => current + "(" + pair.Key + " = " + pair.Value + ") AND ");
+            zapytanie = kluczGlowny.Aggregate(zapytanie,
+                (current, pair) => current + "(" + pair.Key + " = " + pair.Value + ") AND ");
             zapytanie = zapytanie.Remove(zapytanie.Length - 5);
 
-            if (OtworzPolaczenie() && CanDelete(tabela)) {
-                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                cmd.ExecuteNonQuery();
+            if (OtworzPolaczenie()) {
+                if (CanDelete(tabela)) {
+                    MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+                    cmd.ExecuteNonQuery();
+                }
+                else {
+                    ZamknijPolaczenie();
+                    throw new Bledy(KodyBledow.BrakDelete);
+                }
+                ZamknijPolaczenie();
             }
-            else
-                MessageBox.Show("Nie masz uprawnień do deletowania");
-            ZamknijPolaczenie();
         }
 
         public static List<string> ListaTabel() {
-            string zapytanie = "use bsk;show tables";
+            string zapytanie = "use " + NazwaBazy + ";show tables";
             List<string> list = new List<string>();
 
-            if (OtworzPolaczenie())
-            {
+            if (OtworzPolaczenie()) {
                 MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
                 MySqlDataReader dataReader = cmd.ExecuteReader();
 
@@ -147,49 +167,59 @@ namespace bsk___proba_2 {
                 }
 
                 dataReader.Close();
+                ZamknijPolaczenie();
             }
-            ZamknijPolaczenie();
             return list;
         }
 
-        //działa tylko dla kluczy prostych
         public static List<string> KluczGlowny(string tabela) {
             string zapytanie = "SELECT COLUMN_NAME FROM information_schema.columns " +
-                "WHERE (`TABLE_NAME` = \'"+tabela+"\')  AND (`COLUMN_KEY` = \'PRI\');";
+                               "WHERE (`TABLE_NAME` = \'" + tabela + "\')  AND (`COLUMN_KEY` = \'PRI\');";
 
             List<string> glowny = new List<string>();
 
-            if (OtworzPolaczenie() && CanSelect(tabela))//chyba select?
-            {
-                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
+            if (OtworzPolaczenie()) {
+                if (CanSelect(tabela)) {
+                    MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+                    MySqlDataReader dataReader = cmd.ExecuteReader();
 
-                while(dataReader.Read())
-                    glowny.Add(dataReader.GetString(0));
+                    while (dataReader.Read())
+                        glowny.Add(dataReader.GetString(0));
 
-                dataReader.Close();
+                    dataReader.Close();
+                }
+                else {
+                    ZamknijPolaczenie();
+                    throw new Bledy(KodyBledow.BrakSelect);
+                }
+                ZamknijPolaczenie();
             }
-            ZamknijPolaczenie();
             return glowny;
         }
 
         public static List<string> ListaKolumn(string tabela) {
             string zapytanie = "SELECT column_name " +
                                "FROM information_schema.columns " +
-                               "WHERE table_name='" + tabela+"'";
+                               "WHERE table_name='" + tabela + "'";
             List<string> list = new List<string>();
 
-            if (OtworzPolaczenie() && CanSelect(tabela))
-            {
-                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
+            if (OtworzPolaczenie()) {
+                if (CanSelect(tabela)) {
+                    MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+                    MySqlDataReader dataReader = cmd.ExecuteReader();
 
-                while (dataReader.Read())
-                    list.Add(dataReader.GetString(0));//przy takim zapytaniu na pewno nie trzeba pętli, wystarczy (0)
+                    while (dataReader.Read())
+                        list.Add(dataReader.GetString(0));
+                    //przy takim zapytaniu na pewno nie trzeba pętli, wystarczy (0)
 
-                dataReader.Close();
+                    dataReader.Close();
+                }
+                else {
+                    ZamknijPolaczenie();
+                    throw new Bledy(KodyBledow.BrakSelect);
+                }
+                ZamknijPolaczenie();
             }
-            ZamknijPolaczenie();
             return list;
         }
 
@@ -197,27 +227,32 @@ namespace bsk___proba_2 {
             string query = "SELECT * FROM " + tabela;
             List<List<string>> list = new List<List<string>>();
 
-            if (OtworzPolaczenie() && CanSelect(tabela)) {
-                MySqlCommand cmd = new MySqlCommand(query, polaczenie);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
+            if (OtworzPolaczenie()) {
+                if (CanSelect(tabela)) {
+                    MySqlCommand cmd = new MySqlCommand(query, polaczenie);
+                    MySqlDataReader dataReader = cmd.ExecuteReader();
 
-                while (dataReader.Read()) {
-                    List<string> nowaLista = new List<string>();
-                    for (int i=0;i< dataReader.FieldCount;i++)
-                        nowaLista.Add(dataReader.GetString(i));
-                    list.Add(nowaLista);
+                    while (dataReader.Read()) {
+                        List<string> nowaLista = new List<string>();
+                        for (int i = 0; i < dataReader.FieldCount; i++)
+                            nowaLista.Add(dataReader.GetString(i));
+                        list.Add(nowaLista);
+                    }
+
+                    dataReader.Close();
                 }
-
-                dataReader.Close();
+                else {
+                    ZamknijPolaczenie();
+                    throw new Bledy(KodyBledow.BrakSelect);
+                }
+                ZamknijPolaczenie();
             }
-            ZamknijPolaczenie();
             return list;
         }
 
         private static string SelectUprawnienia(string table) {
             if (idRoli == -1)
                 return "----";
-            //TODO try-catch, bo można złą tabelę podać
             string zapytanie = "SELECT " + table + " FROM rola WHERE ID_Roli=" + idRoli;
 
             MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
@@ -237,7 +272,7 @@ namespace bsk___proba_2 {
         }
 
         public static bool CanUpdate(string table) {
-            return true; //tymczasowe
+            return false; //tymczasowe
             return SelectUprawnienia(table)[2] != '-';
         }
 

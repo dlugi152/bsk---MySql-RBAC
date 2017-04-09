@@ -15,12 +15,8 @@ namespace bsk___proba_2
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var myConnectionString = "server="+adresTextBox.Text+";uid="+loginTextBox.Text+";" +
-                                        "pwd="+hasloTextBox.Password+";database=bsk;port="+portTextBox.Text + ";";
-
             try {
                 RBACowyConnector.Inicjalizuj(adresTextBox.Text,//ip
-                    "bsk",//baza
                     loginTextBox.Text,
                     hasloTextBox.Password,
                     portTextBox.Text);
@@ -31,7 +27,7 @@ namespace bsk___proba_2
 
             }
             catch (MySqlException ex) {
-                MessageBox.Show(ex.Message + "\n" + ex.Number.ToString());
+                MessageBox.Show(ex.Message + "\n" + ex.Number);
             }
         }
     }
