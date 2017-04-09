@@ -28,5 +28,10 @@ namespace bsk___proba_2
             ListBoxItem.IsSelected = true;
             ListBoxItem2.IsSelected = false;
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

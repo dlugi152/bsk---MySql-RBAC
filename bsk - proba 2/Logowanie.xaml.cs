@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using MySql.Data.MySqlClient;
 
 namespace bsk___proba_2
 {
@@ -10,30 +11,28 @@ namespace bsk___proba_2
         public MainWindow()
         {
             InitializeComponent();
-            UsrButton.IsChecked = true;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (AdmButton.IsChecked == true) {
-                UserPermission win2 = new UserPermission();
-                win2.Show();
-                Close();
-            }
-            else {
-                Hide();
+            var myConnectionString = "server="+adresTextBox.Text+";uid="+loginTextBox.Text+";" +
+                                        "pwd="+hasloTextBox.Password+";database=bsk;port="+portTextBox.Text + ";";
+
+            try {
+                RBACowyConnector.Inicjalizuj(adresTextBox.Text,//ip
+                    "bsk",//baza
+                    loginTextBox.Text,
+                    hasloTextBox.Password,
+                    portTextBox.Text);
+                RBACowyConnector.TestujPolaczenie();//jeśli źle to rzuci wyjątkiem
                 UserWindow win2 = new UserWindow();
                 win2.Show();
                 Close();
+
             }
-        }
-
-        private void RadioButton_Checked(object sender, RoutedEventArgs e) {
-            AdmButton.IsChecked = false;
-        }
-
-        private void AdmButton_Checked(object sender, RoutedEventArgs e) {
-            UsrButton.IsChecked = false;
+            catch (MySqlException ex) {
+                MessageBox.Show(ex.Message + "\n" + ex.Number.ToString());
+            }
         }
     }
 }

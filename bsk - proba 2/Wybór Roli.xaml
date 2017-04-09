@@ -7,7 +7,8 @@
             <ComboBoxItem Content="Rola1" HorizontalAlignment="Left" Width="118"/>
             <ComboBoxItem Content="Rola2" HorizontalAlignment="Left" Width="118"/>
         </ComboBox>
-        <Button Content="Wybierz tą rolę" HorizontalAlignment="Left" Margin="112,125,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+        <Button Content="Zatwierdź" HorizontalAlignment="Left" Margin="112,125,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+        <Label Content="Wybierz rolę" HorizontalAlignment="Left" Margin="112,38,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.127,-1.174"/>
 
     </Grid>
 </Window>

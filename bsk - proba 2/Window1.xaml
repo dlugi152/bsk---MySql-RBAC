@@ -1,0 +1,10 @@
+﻿<Window x:Class="bsk___proba_2.Window1"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Błąd logowania" Height="300" Width="300">
+    <Grid>
+        <Label Content="Błędne login lub hasło" HorizontalAlignment="Left" Margin="79,74,0,0" VerticalAlignment="Top"/>
+        <Label Content="Spróbuj ponownie" HorizontalAlignment="Left" Margin="89,105,0,0" VerticalAlignment="Top"/>
+        <Button Content="Wróć" HorizontalAlignment="Left" Margin="105,146,0,0" VerticalAlignment="Top" Width="75"/>
+    </Grid>
+</Window>

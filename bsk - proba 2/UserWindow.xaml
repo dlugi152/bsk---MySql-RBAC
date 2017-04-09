@@ -3,12 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="UserWindow" Height="206.667" Width="394.667">
     <Grid>
-        <ListBox HorizontalAlignment="Left" Height="100" Margin="16,27,0,0" VerticalAlignment="Top" Width="100">
-            <ListBoxItem Content="Tabela1"/>
-            <ListBoxItem Content="Tabela2"/>
-        </ListBox>
+        <ListBox x:Name="Tabele" HorizontalAlignment="Left" Height="100" Margin="20,38,0,0" VerticalAlignment="Top" Width="100" MouseDoubleClick="Tabele_MouseDoubleClick"/>
         <Button Content="Wyswietl tabelę" HorizontalAlignment="Left" Margin="175,35,0,0" VerticalAlignment="Top" Width="92" Click="Button_Click"/>
         <Button Content="Usuń tabelę" HorizontalAlignment="Left" Margin="175,92,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False"/>
+        <Label Content="Dostępne tabele" HorizontalAlignment="Left" Margin="20,10,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>
