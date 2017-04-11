@@ -46,7 +46,7 @@ namespace bsk___proba_2 {
                 dopasujRozmiar();
             }
             catch (RBACowyConnector.Bledy blad) {
-                ObslugaBledow(blad.Kod);
+                ObslugaBledow(blad.Kod,blad.Wiadomosc);
             }
         }
 
@@ -85,7 +85,7 @@ namespace bsk___proba_2 {
                 RBACowyConnector.Insert(tabela, kolWart);
             }
             catch (RBACowyConnector.Bledy blad) {
-                ObslugaBledow(blad.Kod);
+                ObslugaBledow(blad.Kod,blad.Wiadomosc);
             }
             PrzeladujDane(); //najprościej i bezbłędnie
         }
@@ -102,7 +102,7 @@ namespace bsk___proba_2 {
                         RBACowyConnector.Delete(tabela, idKlucza);
                     }
                     catch (RBACowyConnector.Bledy blad) {
-                        ObslugaBledow(blad.Kod);
+                        ObslugaBledow(blad.Kod, blad.Wiadomosc);
                     }
                 }
                 PrzeladujDane();
@@ -154,7 +154,7 @@ namespace bsk___proba_2 {
                 RBACowyConnector.Update(tabela, kolWart, idKlucza);
             }
             catch (RBACowyConnector.Bledy blad) {
-                ObslugaBledow(blad.Kod);
+                ObslugaBledow(blad.Kod, blad.Wiadomosc);
             }
             finally {
                 PrzeladujDane();
@@ -162,7 +162,7 @@ namespace bsk___proba_2 {
             }
         }
 
-        private void ObslugaBledow(RBACowyConnector.KodyBledow kod) {
+        private void ObslugaBledow(RBACowyConnector.KodyBledow kod, string wiadomosc) {
             switch (kod) {
                 case RBACowyConnector.KodyBledow.BlednyLoginHaslo:
                     MessageBox.Show("Błędny login lub hasło");
@@ -187,6 +187,9 @@ namespace bsk___proba_2 {
                     break;
                 case RBACowyConnector.KodyBledow.BrakUpdate:
                     MessageBox.Show("Nie masz praw do edytowania");
+                    break;
+                case RBACowyConnector.KodyBledow.BledneZapytanie:
+                    MessageBox.Show(wiadomosc);
                     break;
             }
         }

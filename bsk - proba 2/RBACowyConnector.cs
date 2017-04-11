@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using MySql.Data.MySqlClient;
 
 namespace bsk___proba_2 {
@@ -22,13 +21,21 @@ namespace bsk___proba_2 {
             BrakInsert,
             BrakSelect,
             BrakDelete,
-            BrakUpdate
+            BrakUpdate,
+            BledneZapytanie
         }
 
         public class Bledy : Exception {
             public KodyBledow Kod;
+            public string Wiadomosc;
             public Bledy(KodyBledow kod) {
                 Kod = kod;
+                Wiadomosc = "";
+            }
+
+            public Bledy(KodyBledow kod, string wiadomosc) {
+                Kod = kod;
+                Wiadomosc = wiadomosc;
             }
         }
 
@@ -88,68 +95,96 @@ namespace bsk___proba_2 {
 
         public static void Insert(string tabela, List<KeyValuePair<string, string>> kolAtr) {
             string zapytanie = "INSERT INTO " + tabela + " (";
-            zapytanie = kolAtr.Aggregate(zapytanie, (current, pair) => current + pair.Key + ", ");
+            //gdy ktoś poda pustego stringa to albo będzie wartość domyślna, albo błędne zapytanie (message box)
+            zapytanie = kolAtr.Where(pair => pair.Value != "")
+                .Aggregate(zapytanie, (current, pair) => current + pair.Key + ", ");
             zapytanie = zapytanie.Remove(zapytanie.Length - 2);
             //usuwanie niepotrzebnego przecinka i spacji z poprzedniej pętli
-            zapytanie += ") VALUES(";
-            zapytanie = kolAtr.Aggregate(zapytanie, (current, pair) => current + ("'" + pair.Value + "', "));
+            zapytanie += ") VALUES (";
+            zapytanie = kolAtr.Where(t => t.Value != "")
+                .Aggregate(zapytanie, (current, t) => current + "@" + t.Key + ", ");
             zapytanie = zapytanie.Remove(zapytanie.Length - 2);
             zapytanie += ")";
 
-            if (OtworzPolaczenie()) {
-                if (CanInsert(tabela)) {
-                    MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                    cmd.ExecuteNonQuery();
-                }
-                else {
-                    ZamknijPolaczenie();
-                    throw new Bledy(KodyBledow.BrakInsert);
-                }
+            if (!OtworzPolaczenie()) return;
+            if (!CanInsert(tabela)) {
                 ZamknijPolaczenie();
+                throw new Bledy(KodyBledow.BrakInsert);
             }
+            try {
+                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+                foreach (var t in kolAtr)
+                    if (t.Value != "")
+                        cmd.Parameters.Add(new MySqlParameter("@" + t.Key, t.Value));
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex) {
+                ZamknijPolaczenie();
+                throw new Bledy(KodyBledow.BledneZapytanie, ex.Message);
+            }
+            ZamknijPolaczenie();
         }
 
         public static void Update(string tabela, List<KeyValuePair<string, string>> kolAtr,
             List<KeyValuePair<string, string>> kluczGlowny) {
             string zapytanie = "UPDATE " + tabela + " SET ";
-            zapytanie = kolAtr.Aggregate(zapytanie, (current, pair) => current + pair.Key + "='" + pair.Value + "', ");
+            foreach (var pair in kolAtr)
+                if (pair.Value != "")
+                    zapytanie += pair.Key + "=@" + pair.Key + ", ";
+                else
+                    zapytanie += pair.Key + "=default, ";
             zapytanie = zapytanie.Remove(zapytanie.Length - 2);
             //usuwanie niepotrzebnego przecinka i spacji z poprzedniej pętli
             zapytanie += " WHERE ";
             zapytanie = kluczGlowny.Aggregate(zapytanie,
-                (current, pair) => current + "(" + pair.Key + " = " + pair.Value + ") AND ");
+                (current, pair) => current + "(" + pair.Key + " = @" + pair.Key + ") AND ");
             zapytanie = zapytanie.Remove(zapytanie.Length - 5);
 
-            if (OtworzPolaczenie()) {
-                if (CanUpdate(tabela)) {
-                    MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                    cmd.ExecuteNonQuery();
-                }
-                else {
-                    ZamknijPolaczenie();
-                    throw new Bledy(KodyBledow.BrakUpdate);
-                }
+            if (!OtworzPolaczenie()) return;
+            if (!CanUpdate(tabela)) {
                 ZamknijPolaczenie();
+                throw new Bledy(KodyBledow.BrakUpdate);
             }
+            try {
+                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+                foreach (var t in kolAtr)
+                    if (t.Value != "")
+                        cmd.Parameters.Add(new MySqlParameter("@" + t.Key, t.Value));
+                foreach (var t in kluczGlowny)
+                    if (t.Value != "")
+                        cmd.Parameters.Add(new MySqlParameter("@" + t.Key, t.Value));
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex) {
+                ZamknijPolaczenie();
+                throw new Bledy(KodyBledow.BledneZapytanie, ex.Message);
+            }
+            ZamknijPolaczenie();
         }
 
         public static void Delete(string tabela, List<KeyValuePair<string, string>> kluczGlowny) {
             string zapytanie = "DELETE FROM " + tabela + " WHERE ";
             zapytanie = kluczGlowny.Aggregate(zapytanie,
-                (current, pair) => current + "(" + pair.Key + " = " + pair.Value + ") AND ");
+                (current, pair) => current + "(" + pair.Key + " = @" + pair.Key + ") AND ");
             zapytanie = zapytanie.Remove(zapytanie.Length - 5);
 
-            if (OtworzPolaczenie()) {
-                if (CanDelete(tabela)) {
-                    MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                    cmd.ExecuteNonQuery();
-                }
-                else {
-                    ZamknijPolaczenie();
-                    throw new Bledy(KodyBledow.BrakDelete);
-                }
+            if (!OtworzPolaczenie()) return;
+            if (!CanDelete(tabela)) {
                 ZamknijPolaczenie();
+                throw new Bledy(KodyBledow.BrakDelete);
             }
+            try {
+                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+                foreach (var t in kluczGlowny)
+                    if (t.Value != "")
+                        cmd.Parameters.Add(new MySqlParameter("@" + t.Key, t.Value));
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex) {
+                ZamknijPolaczenie();
+                throw new Bledy(KodyBledow.BledneZapytanie, ex.Message);
+            }
+            ZamknijPolaczenie();
         }
 
         public static List<string> ListaTabel() {
@@ -174,13 +209,14 @@ namespace bsk___proba_2 {
 
         public static List<string> KluczGlowny(string tabela) {
             string zapytanie = "SELECT COLUMN_NAME FROM information_schema.columns " +
-                               "WHERE (`TABLE_NAME` = \'" + tabela + "\')  AND (`COLUMN_KEY` = \'PRI\');";
+                               "WHERE (`TABLE_NAME` = @tabela)  AND (`COLUMN_KEY` = \'PRI\');";
 
             List<string> glowny = new List<string>();
 
             if (OtworzPolaczenie()) {
                 if (CanSelect(tabela)) {
                     MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+                    cmd.Parameters.Add(new MySqlParameter("@tabela", tabela));
                     MySqlDataReader dataReader = cmd.ExecuteReader();
 
                     while (dataReader.Read())
@@ -200,12 +236,13 @@ namespace bsk___proba_2 {
         public static List<string> ListaKolumn(string tabela) {
             string zapytanie = "SELECT column_name " +
                                "FROM information_schema.columns " +
-                               "WHERE table_name='" + tabela + "'";
+                               "WHERE table_name=@tabela";
             List<string> list = new List<string>();
 
             if (OtworzPolaczenie()) {
                 if (CanSelect(tabela)) {
                     MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+                    cmd.Parameters.Add(new MySqlParameter("@tabela", tabela));
                     MySqlDataReader dataReader = cmd.ExecuteReader();
 
                     while (dataReader.Read())
@@ -272,7 +309,7 @@ namespace bsk___proba_2 {
         }
 
         public static bool CanUpdate(string table) {
-            return false; //tymczasowe
+            return true; //tymczasowe
             return SelectUprawnienia(table)[2] != '-';
         }
 
