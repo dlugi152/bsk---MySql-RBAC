@@ -8,9 +8,9 @@
         <Button Content="Zaloguj" HorizontalAlignment="Left" Margin="222,250,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
         <Label Content="Login" HorizontalAlignment="Left" Margin="148,156,0,0" VerticalAlignment="Top"/>
         <Label Content="Hasło" HorizontalAlignment="Left" Margin="148,200,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="adresTextBox" HorizontalAlignment="Left" Height="23" Margin="222,71,0,0" TextWrapping="Wrap" Text="localhost" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="AdresTextBox" HorizontalAlignment="Left" Height="23" Margin="222,71,0,0" TextWrapping="Wrap" Text="localhost" VerticalAlignment="Top" Width="120"/>
         <Label Content="Adres serwera" HorizontalAlignment="Left" Margin="104,71,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="portTextBox" HorizontalAlignment="Left" Height="23" Margin="222,113,0,0" TextWrapping="Wrap" Text="15000" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="PortTextBox" HorizontalAlignment="Left" Height="23" Margin="222,113,0,0" TextWrapping="Wrap" Text="15000" VerticalAlignment="Top" Width="120"/>
         <Label Content="Port" HorizontalAlignment="Left" Margin="155,113,0,0" VerticalAlignment="Top"/>
         <PasswordBox x:Name="hasloTextBox" HorizontalAlignment="Left" Margin="222,200,0,0" VerticalAlignment="Top" Width="120" Password="bombelek"/>
     </Grid>

@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using MySql.Data.MySqlClient;
 
 namespace bsk___proba_2
@@ -16,18 +17,21 @@ namespace bsk___proba_2
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             try {
-                RBACowyConnector.Inicjalizuj(adresTextBox.Text,//ip
+                RBACowyConnector.Inicjalizuj(AdresTextBox.Text, //ip
                     loginTextBox.Text,
                     hasloTextBox.Password,
-                    portTextBox.Text);
-                RBACowyConnector.TestujPolaczenie();//jeśli źle to rzuci wyjątkiem
-                UserWindow win2 = new UserWindow();
-                win2.Show();
+                    PortTextBox.Text);
+                Wybór_Roli win2 = new Wybór_Roli();
+                win2.ShowDialog();
+                if (win2.DialogResult==true)
                 Close();
 
             }
             catch (MySqlException ex) {
                 MessageBox.Show(ex.Message + "\n" + ex.Number);
+            }
+            catch (Exception ex) {
+                MessageBox.Show(ex.Message);
             }
         }
     }
