@@ -1,43 +1,32 @@
 ﻿<Window x:Class="bsk___proba_2.UserPermission"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Zarządzaj rolami" Height="756.9" Width="422">
-    <Grid Margin="0,0,-8,0">
-        <ComboBox HorizontalAlignment="Left" Margin="137,19,0,0" VerticalAlignment="Top" Width="120">
-            <ComboBoxItem Content="ComboBoxItem" HorizontalAlignment="Left" Width="118" Selected="ComboBox_Selected"/>
-            <ComboBoxItem Content="ComboBoxItem" HorizontalAlignment="Left" Width="118" Selected="ComboBox_Selected"/>
-        </ComboBox>
-        <Button Content="Zatwierdź role" HorizontalAlignment="Left" VerticalAlignment="Top" Width="108" Margin="197,234,0,0"/>
+        Name="Okienko"
+        Title="Zarządzaj rolami" Height="641.975" Width="330.955">
+    <Grid Margin="0,0,0,0">
+        <ComboBox Name="ComboBoxUŻytkowników" HorizontalAlignment="Left" Margin="137,19,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="ComboBoxUŻytkowników_SelectionChanged" />
+        <Button Content="Zatwierdź role" HorizontalAlignment="Left" VerticalAlignment="Top" Width="108" Margin="197,97,0,0"/>
         <Label Content="Wybierz użytkownika" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,19,0,0"/>
-        <ListBox HorizontalAlignment="Left" Height="201" Margin="12,97,0,0" VerticalAlignment="Top" Width="163" SelectionMode="Multiple" SelectionChanged="ListBox_SelectionChanged">
-            <ListBoxItem Content="Rola1" Selected="ListBoxItem_Selected" Unselected="ListBoxItem_Selected" Name="ListBoxItem"/>
-            <ListBoxItem Content="Rola2" Selected="ListBoxItem_Selected" Unselected="ListBoxItem_Selected" Name="ListBoxItem2"/>
-            <ListBoxItem Content="Rola3" Selected="ListBoxItem_Selected" Unselected="ListBoxItem_Selected" Name="ListBoxItem3"/>
-            <ListBoxItem Content="Rola4" Selected="ListBoxItem_Selected" Unselected="ListBoxItem_Selected" Name="ListBoxItem4"/>
-        </ListBox>
+        <ListBox Name="ListBoxPrzypisanychRól" HorizontalAlignment="Left" Height="137" Margin="12,97,0,0" VerticalAlignment="Top" Width="163" SelectionMode="Multiple" SelectionChanged="ListBox_SelectionChanged"/>
         <Label Content="Filtruj role" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12,66,0,0"/>
         <TextBox HorizontalAlignment="Left" Height="23" Margin="80,70,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="95"/>
-
-        <Label Content="Opis roli" HorizontalAlignment="Left" Margin="197,70,0,0" VerticalAlignment="Top" Name="DescribeRoleLabel"/>
-        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="83" Margin="197,101,0,0" VerticalAlignment="Top" Width="199">
-            <TextBox TextWrapping="Wrap" IsEnabled="False"/>
-        </Border>
-        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="1" Margin="12,327,0,0" VerticalAlignment="Top" Width="384"/>
-        <Label Content="Stwórz nową rolę" HorizontalAlignment="Left" Margin="12,346,0,0" VerticalAlignment="Top"/>
-        <Button Content="Stwórz rolę" HorizontalAlignment="Left" Margin="12,435,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
-        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="1" Margin="12,327,0,0" VerticalAlignment="Top" Width="384"/>
-        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="1" Margin="12,474,0,0" VerticalAlignment="Top" Width="384"/>
-        <Label Content="Usuń wybrane role" HorizontalAlignment="Left" Margin="12,490,0,0" VerticalAlignment="Top"/>
-        <ListBox HorizontalAlignment="Left" Height="201" Margin="12,516,0,-19" VerticalAlignment="Top" Width="163" SelectionMode="Multiple" SelectionChanged="ListBox_SelectionChanged">
-            <ListBoxItem Content="Rola1" Selected="ListBoxItem_Selected" Unselected="ListBoxItem_Selected" />
-            <ListBoxItem Content="Rola2" Selected="ListBoxItem_Selected" Unselected="ListBoxItem_Selected" />
-            <ListBoxItem Content="Rola3" Selected="ListBoxItem_Selected" Unselected="ListBoxItem_Selected" />
-            <ListBoxItem Content="Rola4" Selected="ListBoxItem_Selected" Unselected="ListBoxItem_Selected" />
-        </ListBox>
-        <Button Content="Usuń wybrane role" HorizontalAlignment="Left" Margin="197,556,0,0" VerticalAlignment="Top" Width="108"/>
-        <Button Content="Edytuj rolę" HorizontalAlignment="Left" Margin="290,435,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
-        <ComboBox Visibility="Visible" HorizontalAlignment="Left" Margin="290,372,0,0" VerticalAlignment="Top" Width="75" Height="19"/>
-        <Label Content="Wybierz rolę" HorizontalAlignment="Left" Margin="290,346,0,0" VerticalAlignment="Top"/>
+        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Center" Height="1" Margin="0,255,0,0" VerticalAlignment="Top" Width="304"/>
+        <Label Content="Stwórz nową rolę" HorizontalAlignment="Left" Margin="12,276,0,0" VerticalAlignment="Top"/>
+        <Button Content="Stwórz rolę" HorizontalAlignment="Left" Margin="12,310,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Center" Height="1" Margin="0,404,0,0" VerticalAlignment="Top" Width="304"/>
+        <Label Content="Usuń wybrane role" HorizontalAlignment="Left" Margin="12,423,0,0" VerticalAlignment="Top"/>
+        <ListBox Name="ListBoxWszystkichRól" HorizontalAlignment="Left" Height="137" Margin="12,454,0,0" VerticalAlignment="Top" Width="163" SelectionMode="Multiple" SelectionChanged="ListBox_SelectionChanged" />
+        <Button Content="Usuń wybrane role" HorizontalAlignment="Left" Margin="194,454,0,0" VerticalAlignment="Top" Width="108"/>
+        <Button Content="Oglądaj/Edytuj rolę" HorizontalAlignment="Left" Margin="195,360,0,0" VerticalAlignment="Top" Width="110" Click="Button_Click"/>
+        <ComboBox Name="ComboBoxEdycjiRól" Visibility="Visible" HorizontalAlignment="Left" Margin="227,307,0,0" VerticalAlignment="Top" Width="75" Height="19"/>
+        <Label Content="Wybierz rolę" HorizontalAlignment="Left" Margin="227,276,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>
+
+
+
+
+
+
+

@@ -5,13 +5,14 @@
     <Grid>
         <Label Content="Nazwa Roli" HorizontalAlignment="Left" Margin="109,5,0,0" VerticalAlignment="Top"/>
         <TextBox HorizontalAlignment="Left" Height="23" Margin="78,31,0,0" TextWrapping="Wrap" Text="Rola1" VerticalAlignment="Top" Width="120"/>
-        <Button Content="Zatwierdź" HorizontalAlignment="Left" Margin="109,250,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button Content="Zatwierdź" HorizontalAlignment="Left" Margin="162,249,0,0" VerticalAlignment="Top" Width="75"/>
         <Label Content="Wybierz obiekt" HorizontalAlignment="Left" Margin="95,59,0,0" VerticalAlignment="Top"/>
         <ComboBox HorizontalAlignment="Left" Margin="78,90,0,0" VerticalAlignment="Top" Width="120"/>
         <CheckBox Content="Zapis" HorizontalAlignment="Left" Margin="45,149,0,0" VerticalAlignment="Top"/>
         <CheckBox Content="Odczyt" HorizontalAlignment="Left" Margin="162,149,0,0" VerticalAlignment="Top"/>
         <CheckBox Content="Edycja" HorizontalAlignment="Left" Margin="45,192,0,0" VerticalAlignment="Top"/>
         <CheckBox Content="Usuwanie" HorizontalAlignment="Left" Margin="162,192,0,0" VerticalAlignment="Top"/>
+        <CheckBox Content="Admińska" HorizontalAlignment="Left" Margin="45,252,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

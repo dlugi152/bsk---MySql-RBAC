@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace bsk___proba_2
@@ -11,11 +12,13 @@ namespace bsk___proba_2
         public UserPermission()
         {
             InitializeComponent();
-        }
+            foreach (string s in RBACowyConnector.ListaPracowników())
+                ComboBoxUŻytkowników.Items.Add(s);
+            foreach (string s in RBACowyConnector.ListaWszystkichRól()) {
+                ListBoxWszystkichRól.Items.Add(s);
+                ComboBoxEdycjiRól.Items.Add(s);
+            }
 
-        private void ListBoxItem_Selected(object sender, RoutedEventArgs e)
-        {
-            DescribeRoleLabel.Content = "Opis Roli \""+((ListBoxItem)sender).Content+"\"";
         }
 
         private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -23,15 +26,21 @@ namespace bsk___proba_2
         
         }
 
-        private void ComboBox_Selected(object sender, RoutedEventArgs e)
-        {
-            ListBoxItem.IsSelected = true;
-            ListBoxItem2.IsSelected = false;
-        }
-
         private void Button_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void ComboBoxUŻytkowników_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            string wybranyUżytkownik = ComboBoxUŻytkowników.SelectedItem.ToString();
+            if (ListBoxPrzypisanychRól.Items.IsEmpty) {
+                foreach (object item in ListBoxWszystkichRól.Items)
+                    ListBoxPrzypisanychRól.Items.Add(item);
+            }
+            List<string> roleUżytkownika = RBACowyConnector.RoleUżytkownika(wybranyUżytkownik);
+            foreach (string s in roleUżytkownika)
+                ListBoxPrzypisanychRól.SelectedItems.Add(s);
+            ListBoxPrzypisanychRól.Focus();
         }
     }
 }

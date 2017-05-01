@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using MySql.Data.MySqlClient;
 
@@ -15,12 +16,15 @@ namespace bsk___proba_2 {
         private static List<string> KluczGłównyRól;
         private static bool czyAdmin;
         private const string NazwaBazy = "bsk";
-        private const string TabelaZLoginami = "Pracownik";
+        private const string TabelaZPracownikami = "Pracownik";
         private const string TabelaZRolami = "Rola";
         private const string NazwaKolumnyLoginow = "Login_Uzytkownika";
         private const string NazwaKolumnyCzyAdmin = "Adminska";
         private const string NazwaKolumnyRoli = "Nazwa";
         private const string TabelaZPrzypisaniemRól = "Przypisanie_Roli";
+
+        private static readonly IList<string> TabeleAdmińskie = new ReadOnlyCollection<string>
+            (new List<string> {TabelaZRolami, TabelaZPrzypisaniemRól, TabelaZPracownikami});
 
         public enum KodyBledow {
             BlednyLoginHaslo,
@@ -82,10 +86,10 @@ namespace bsk___proba_2 {
         }
 
         private static void UstawIdZalogowanego() {
-            string glowny = KluczGlowny(TabelaZLoginami).Aggregate("(", (current, s) => current + s + ", ");
+            string glowny = KluczGlowny(TabelaZPracownikami).Aggregate("(", (current, s) => current + s + ", ");
             glowny = glowny.Remove(glowny.Length - 2);
             glowny += ")";
-            string query = "SELECT " + glowny + " FROM " + TabelaZLoginami + " WHERE " + NazwaKolumnyLoginow +
+            string query = "SELECT " + glowny + " FROM " + TabelaZPracownikami + " WHERE " + NazwaKolumnyLoginow +
                            " = @login";
             List<string> idZalogowanego = new List<string>();
             if (OtworzPolaczenie()) {
@@ -272,7 +276,8 @@ namespace bsk___proba_2 {
                     listaWszystkich.Add(dataReader.GetString(0));
                 dataReader.Close();
                 ZamknijPolaczenie();
-                list.AddRange(listaWszystkich.Where(nowy => CanSelect(nowy) || CanDelete(nowy) || CanInsert(nowy) || CanUpdate(nowy)));
+                list.AddRange(listaWszystkich.Where(
+                    nowy => CanSelect(nowy) || CanDelete(nowy) || CanInsert(nowy) || CanUpdate(nowy)));
             }
             return list;
         }
@@ -285,14 +290,14 @@ namespace bsk___proba_2 {
 
             if (OtworzPolaczenie()) {
                 //if (CanSelect(tabela)) {
-                    MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                    cmd.Parameters.Add(new MySqlParameter("@tabela", tabela));
-                    MySqlDataReader dataReader = cmd.ExecuteReader();
+                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+                cmd.Parameters.Add(new MySqlParameter("@tabela", tabela));
+                MySqlDataReader dataReader = cmd.ExecuteReader();
 
-                    while (dataReader.Read())
-                        glowny.Add(dataReader.GetString(0));
+                while (dataReader.Read())
+                    glowny.Add(dataReader.GetString(0));
 
-                    dataReader.Close();
+                dataReader.Close();
                 //}
                 //else {
                 //    ZamknijPolaczenie();
@@ -308,7 +313,7 @@ namespace bsk___proba_2 {
                                "FROM information_schema.columns " +
                                "WHERE table_name=@tabela";
             List<string> list = new List<string>();
-            
+
             if (CanSelect(tabela)) {
                 if (OtworzPolaczenie()) {
                     MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
@@ -373,19 +378,19 @@ namespace bsk___proba_2 {
         }
 
         public static bool CanSelect(string table) {
-            return SelectUprawnienia(table)[0] != '-';
+            return CzyZalogowanyAdmin() || SelectUprawnienia(table)[0] != '-';
         }
 
         public static bool CanInsert(string table) {
-            return SelectUprawnienia(table)[1] != '-';
+            return CzyZalogowanyAdmin() || SelectUprawnienia(table)[1] != '-';
         }
 
         public static bool CanUpdate(string table) {
-            return SelectUprawnienia(table)[2] != '-';
+            return CzyZalogowanyAdmin() || SelectUprawnienia(table)[2] != '-';
         }
 
         public static bool CanDelete(string table) {
-            return SelectUprawnienia(table)[3] != '-';
+            return CzyZalogowanyAdmin() || SelectUprawnienia(table)[3] != '-';
         }
 
         /*
@@ -397,12 +402,73 @@ namespace bsk___proba_2 {
             string query = "SELECT " + NazwaKolumnyRoli + " FROM " + TabelaZRolami +
                            " INNER JOIN " + TabelaZPrzypisaniemRól + " on " + TabelaZRolami +
                            "." + kluczGlowny[0] + " = " + TabelaZPrzypisaniemRól + "." +
-                           kluczGlowny[0] + " WHERE " + TabelaZPrzypisaniemRól + "." + KluczGlowny(TabelaZLoginami)[0] +
+                           kluczGlowny[0] + " WHERE " + TabelaZPrzypisaniemRól + "." +
+                           KluczGlowny(TabelaZPracownikami)[0] +
                            " = " + idZalogowanegoPracownika[0];
             List<string> listaRól = new List<string>();
             if (OtworzPolaczenie()) {
                 //brak sprawdzania czy można selectować tabelę z rolami
                 MySqlCommand cmd = new MySqlCommand(query, polaczenie);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                while (dataReader.Read())
+                    listaRól.Add(dataReader.GetString(0)); //0 bo zapytanie czyta tylko 1 kolumnę - nazwę
+
+                dataReader.Close();
+                ZamknijPolaczenie();
+            }
+            return listaRól;
+        }
+
+        private static List<string> SelectJednąKolumnę(string kolumna, string tabela) {
+            string query = "SELECT " + kolumna + " FROM " + tabela;
+            List<string> wynik = new List<string>();
+
+            if (CzyZalogowanyAdmin() || CanSelect(tabela))
+            {
+                if (OtworzPolaczenie())
+                {
+                    MySqlCommand cmd = new MySqlCommand(query, polaczenie);
+                    MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                    while (dataReader.Read())
+                        wynik.Add(dataReader.GetString(0));
+                    dataReader.Close();
+                    ZamknijPolaczenie();
+                }
+            }
+            else
+                throw new Bledy(KodyBledow.BrakSelect);
+            return wynik;
+        }
+
+        public static List<string> ListaPracowników() {
+            return SelectJednąKolumnę(NazwaKolumnyLoginow, TabelaZPracownikami);
+        }
+
+        public static List<string> ListaWszystkichRól() {
+            return SelectJednąKolumnę(NazwaKolumnyRoli, TabelaZRolami);
+        }
+
+        public static List<string> RoleUżytkownika(string użytkownik) {
+            List<string> kluczGlownyRól = KluczGlowny(TabelaZRolami);
+            List<string> kluczGłównyPracowników = KluczGlowny(TabelaZPracownikami);
+
+            string query = "SELECT " + NazwaKolumnyRoli + " FROM " + TabelaZRolami +
+                           " INNER JOIN " + TabelaZPrzypisaniemRól + " on " + TabelaZRolami +
+                           "." + kluczGlownyRól[0] + " = " + TabelaZPrzypisaniemRól + "." +
+                           kluczGlownyRól[0] + " WHERE " + TabelaZPrzypisaniemRól + "." +
+                           KluczGlowny(TabelaZPracownikami)[0] +
+                           " = (SELECT " + kluczGłównyPracowników[0] + " FROM " + TabelaZPracownikami + " WHERE " +
+                           NazwaKolumnyLoginow +
+                           " = @login)";
+            
+            List<string> listaRól = new List<string>();
+            if (OtworzPolaczenie())
+            {
+                //brak sprawdzania czy można selectować tabelę z rolami
+                MySqlCommand cmd = new MySqlCommand(query, polaczenie);
+                cmd.Parameters.Add(new MySqlParameter("@login", użytkownik));
                 MySqlDataReader dataReader = cmd.ExecuteReader();
 
                 while (dataReader.Read())
