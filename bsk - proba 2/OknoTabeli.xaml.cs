@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -95,9 +96,8 @@ namespace bsk___proba_2 {
             if (zaznaczone.Count > 0) {
                 foreach (var o in zaznaczone)
                 {
-                    var idKlucza = new List<KeyValuePair<string, string>>();
-                    foreach (var s in kluczGlowny)
-                        idKlucza.Add(new KeyValuePair<string, string>(s, ((IDictionary<string, object>) o)[s].ToString()));
+                    var idKlucza = kluczGlowny.Select(s => new KeyValuePair<string, string>
+                        (s, ((IDictionary<string, object>) o)[s].ToString())).ToList();
                     try {
                         RBACowyConnector.Delete(tabela, idKlucza);
                     }

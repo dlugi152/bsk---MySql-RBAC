@@ -15,7 +15,7 @@ namespace bsk___proba_2
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {
-            RBACowyConnector.UstawRole(ComboBox.SelectionBoxItem.ToString());
+            RBACowyConnector.UstawAktualnąRolę(ComboBox.SelectionBoxItem.ToString());
             if (RBACowyConnector.CzyZalogowanyAdmin()) {
                 UserPermission win2 = new UserPermission();
                 win2.Show();

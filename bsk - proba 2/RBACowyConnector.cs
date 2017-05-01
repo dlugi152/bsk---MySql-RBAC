@@ -85,13 +85,13 @@ namespace bsk___proba_2 {
             KluczGłównyRól = KluczGlowny(TabelaZRolami);
         }
 
-        private static void UstawIdZalogowanego() {
+        private static List<string> IdPracownika(string login) {
             string glowny = KluczGlowny(TabelaZPracownikami).Aggregate("(", (current, s) => current + s + ", ");
             glowny = glowny.Remove(glowny.Length - 2);
             glowny += ")";
             string query = "SELECT " + glowny + " FROM " + TabelaZPracownikami + " WHERE " + NazwaKolumnyLoginow +
                            " = @login";
-            List<string> idZalogowanego = new List<string>();
+            List<string> idUżytkownika = new List<string>();
             if (OtworzPolaczenie()) {
                 //brak sprawdzania czy można selectować tabelę z pracownikami
                 MySqlCommand cmd = new MySqlCommand(query, polaczenie);
@@ -100,15 +100,19 @@ namespace bsk___proba_2 {
 
                 dataReader.Read(); //zał. loginy są unikalne
                 for (int i = 0; i < dataReader.FieldCount; i++)
-                    idZalogowanego.Add(dataReader.GetString(i));
+                    idUżytkownika.Add(dataReader.GetString(i));
 
                 dataReader.Close();
                 ZamknijPolaczenie();
             }
-            idZalogowanegoPracownika = idZalogowanego;
+            return idUżytkownika;
         }
 
-        public static void UstawRole(string nazwa) {
+        private static void UstawIdZalogowanego() {
+            idZalogowanegoPracownika = IdPracownika(login);
+        }
+
+        private static List<string> IdRoli(string nazwa) {
             string query = " SELECT " + KluczGlowny(TabelaZRolami).Aggregate("", (current, s) => current + s + ", ") +
                            NazwaKolumnyCzyAdmin + " FROM " + TabelaZRolami + " WHERE " + NazwaKolumnyRoli +
                            " = @nazwa";
@@ -126,7 +130,11 @@ namespace bsk___proba_2 {
                 dataReader.Close();
                 ZamknijPolaczenie();
             }
-            idUzytejRoli = idRoli;
+            return idRoli;
+        }
+
+        public static void UstawAktualnąRolę(string nazwa) {
+            idUzytejRoli = IdRoli(nazwa);
         }
 
         private static bool TestujPolaczenie() {
@@ -162,18 +170,35 @@ namespace bsk___proba_2 {
             }
         }
 
-        public static void Insert(string tabela, List<KeyValuePair<string, string>> kolAtr) {
+        public static void Insert(string tabela, List<KeyValuePair<string, string>> kolAtr, bool nieIstnieją = false)
+        {
             string zapytanie = "INSERT INTO " + tabela + " (";
             //gdy ktoś poda pustego stringa to albo będzie wartość domyślna, albo błędne zapytanie (message box)
             zapytanie = kolAtr.Where(pair => pair.Value != "")
                 .Aggregate(zapytanie, (current, pair) => current + pair.Key + ", ");
             zapytanie = zapytanie.Remove(zapytanie.Length - 2);
             //usuwanie niepotrzebnego przecinka i spacji z poprzedniej pętli
-            zapytanie += ") VALUES (";
-            zapytanie = kolAtr.Where(t => t.Value != "")
-                .Aggregate(zapytanie, (current, t) => current + "@" + t.Key + ", ");
-            zapytanie = zapytanie.Remove(zapytanie.Length - 2);
-            zapytanie += ")";
+            zapytanie += ") ";
+            if (nieIstnieją==false) {
+                zapytanie += "VALUES (";
+                zapytanie = kolAtr.Where(t => t.Value != "")
+                    .Aggregate(zapytanie, (current, t) => current + "@" + t.Key + ", ");
+                zapytanie = zapytanie.Remove(zapytanie.Length - 2);
+                zapytanie += ")";
+            }
+            else {
+                zapytanie += "SELECT ";
+                zapytanie = kolAtr.Where(pair => pair.Value != "").Aggregate(zapytanie, (current, pair) => current + "@" + pair.Key + ", ");
+                zapytanie=zapytanie.Remove(zapytanie.Length - 2);
+                zapytanie += " WHERE NOT EXISTS (SELECT * FROM " + tabela + " WHERE ";
+                foreach (KeyValuePair<string, string> pair in kolAtr)
+                    if (pair.Value != "")
+                        zapytanie += pair.Key + " = @" + pair.Key + " and ";
+                    else
+                        zapytanie += pair.Key + " = '" + DomyślnaWartość(tabela, pair.Key) + "' and ";
+                zapytanie = zapytanie.Remove(zapytanie.Length - 5);
+                zapytanie += ") LIMIT 1";
+            }
 
 
             if (CanInsert(tabela)) {
@@ -236,7 +261,7 @@ namespace bsk___proba_2 {
                 throw new Bledy(KodyBledow.BrakUpdate);
         }
 
-        public static void Delete(string tabela, List<KeyValuePair<string, string>> kluczGlowny) {
+        public static void Delete(string tabela, List<KeyValuePair<string, string>> kluczGlowny, bool czyIstnieją = false) {
             string zapytanie = "DELETE FROM " + tabela + " WHERE ";
             zapytanie = kluczGlowny.Aggregate(zapytanie,
                 (current, pair) => current + "(" + pair.Key + " = @" + pair.Key + ") AND ");
@@ -264,7 +289,7 @@ namespace bsk___proba_2 {
         }
 
         public static List<string> ListaTabel() {
-            string zapytanie = "use " + NazwaBazy + ";show tables";
+            string zapytanie = "show tables";
             List<string> list = new List<string>();
 
             if (OtworzPolaczenie()) {
@@ -280,6 +305,37 @@ namespace bsk___proba_2 {
                     nowy => CanSelect(nowy) || CanDelete(nowy) || CanInsert(nowy) || CanUpdate(nowy)));
             }
             return list;
+        }
+
+        private static string DomyślnaWartość(string tabela, string kolumna) {
+            string zapytanie = "SELECT Column_Default FROM information_schema.columns " +
+                               "WHERE (`TABLE_NAME` = @tabela)  AND (`COLUMN_NAME` = @kolumna);";
+            string domyślna = "";
+
+            if (OtworzPolaczenie()) {
+                //if (CanSelect(tabela)) {
+                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+                cmd.Parameters.Add(new MySqlParameter("@tabela", tabela));
+                cmd.Parameters.Add(new MySqlParameter("@kolumna", kolumna));
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                dataReader.Read();
+                try {
+                    domyślna = dataReader.GetString(0);
+                }
+                catch (Exception) { }
+                finally {
+
+                    dataReader.Close();
+                    //}
+                    //else {
+                    //    ZamknijPolaczenie();
+                    //    throw new Bledy(KodyBledow.BrakSelect);
+                    //}
+                    ZamknijPolaczenie();
+                }
+            }
+            return domyślna;
         }
 
         public static List<string> KluczGlowny(string tabela) {
@@ -359,15 +415,14 @@ namespace bsk___proba_2 {
 
         private static string SelectUprawnienia(string table) {
             string zapytanie = "SELECT " + table + " FROM " + TabelaZRolami + " WHERE (";
-            for (var i = 0; i < KluczGłównyRól.Count; i++)
-                zapytanie += KluczGłównyRól[i] + " = @wart" + i + " and ";
+            zapytanie = KluczGłównyRól.Aggregate(zapytanie, (current, t) => current + t + " = @" + t + " and ");
             zapytanie = zapytanie.Remove(zapytanie.Length - 5);
             zapytanie += ")";
             string uprawnienia = "";
             if (OtworzPolaczenie()) {
                 MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
                 for (var i = 0; i < idUzytejRoli.Count; i++)
-                    cmd.Parameters.Add(new MySqlParameter("@wart" + i, idUzytejRoli[i]));
+                    cmd.Parameters.Add(new MySqlParameter("@" + KluczGłównyRól[i], idUzytejRoli[i]));
                 MySqlDataReader dataReader = cmd.ExecuteReader();
                 if (dataReader.Read())
                     uprawnienia = dataReader.GetString(0);
@@ -393,31 +448,8 @@ namespace bsk___proba_2 {
             return CzyZalogowanyAdmin() || SelectUprawnienia(table)[3] != '-';
         }
 
-        /*
-         * działa dobrze, jeśli tabela z rolami i z pracownikami nie mają klucza złożonego
-         * pierdole te klucze złożone...
-         */
         public static List<string> MojeRoleNazwy() {
-            List<string> kluczGlowny = KluczGlowny(TabelaZRolami);
-            string query = "SELECT " + NazwaKolumnyRoli + " FROM " + TabelaZRolami +
-                           " INNER JOIN " + TabelaZPrzypisaniemRól + " on " + TabelaZRolami +
-                           "." + kluczGlowny[0] + " = " + TabelaZPrzypisaniemRól + "." +
-                           kluczGlowny[0] + " WHERE " + TabelaZPrzypisaniemRól + "." +
-                           KluczGlowny(TabelaZPracownikami)[0] +
-                           " = " + idZalogowanegoPracownika[0];
-            List<string> listaRól = new List<string>();
-            if (OtworzPolaczenie()) {
-                //brak sprawdzania czy można selectować tabelę z rolami
-                MySqlCommand cmd = new MySqlCommand(query, polaczenie);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                    listaRól.Add(dataReader.GetString(0)); //0 bo zapytanie czyta tylko 1 kolumnę - nazwę
-
-                dataReader.Close();
-                ZamknijPolaczenie();
-            }
-            return listaRól;
+            return RoleUżytkownika(login);
         }
 
         private static List<string> SelectJednąKolumnę(string kolumna, string tabela) {
@@ -453,19 +485,25 @@ namespace bsk___proba_2 {
         public static List<string> RoleUżytkownika(string użytkownik) {
             List<string> kluczGlownyRól = KluczGlowny(TabelaZRolami);
             List<string> kluczGłównyPracowników = KluczGlowny(TabelaZPracownikami);
+            string query =
+                kluczGlownyRól.Aggregate(
+                    "SELECT " + NazwaKolumnyRoli + " FROM " + TabelaZRolami + " INNER JOIN (SELECT " +
+                    TabelaZPracownikami + "." + NazwaKolumnyLoginow + ",",
+                    (current, s) => current + TabelaZPrzypisaniemRól + "." + s + ",");
+            query = query.Remove(query.Length - 1);
+            query += " FROM " + TabelaZPrzypisaniemRól + " INNER JOIN " + TabelaZPracownikami + " ON ";
+            query = kluczGłównyPracowników.Aggregate(query,
+                (current, s) => current + TabelaZPracownikami + "." + s + " = " + TabelaZPrzypisaniemRól + "." + s +
+                                " and ");
+            query = query.Remove(query.Length - 5);
+            query += ") as tmp ON ";
+            query = kluczGlownyRól.Aggregate(query,
+                (current, s) => current + TabelaZRolami + "." + s + " = tmp." + s + " and ");
+            query = query.Remove(query.Length - 5);
+            query += " WHERE tmp." + NazwaKolumnyLoginow + " = @login";
 
-            string query = "SELECT " + NazwaKolumnyRoli + " FROM " + TabelaZRolami +
-                           " INNER JOIN " + TabelaZPrzypisaniemRól + " on " + TabelaZRolami +
-                           "." + kluczGlownyRól[0] + " = " + TabelaZPrzypisaniemRól + "." +
-                           kluczGlownyRól[0] + " WHERE " + TabelaZPrzypisaniemRól + "." +
-                           KluczGlowny(TabelaZPracownikami)[0] +
-                           " = (SELECT " + kluczGłównyPracowników[0] + " FROM " + TabelaZPracownikami + " WHERE " +
-                           NazwaKolumnyLoginow +
-                           " = @login)";
-            
             List<string> listaRól = new List<string>();
-            if (OtworzPolaczenie())
-            {
+            if (OtworzPolaczenie()) {
                 //brak sprawdzania czy można selectować tabelę z rolami
                 MySqlCommand cmd = new MySqlCommand(query, polaczenie);
                 cmd.Parameters.Add(new MySqlParameter("@login", użytkownik));
@@ -478,6 +516,34 @@ namespace bsk___proba_2 {
                 ZamknijPolaczenie();
             }
             return listaRól;
+        }
+
+        public static void DodajRolę(string rola, string użytkownik) {
+            List<string> idPracownika = IdPracownika(użytkownik);
+            List<string> idRoli = IdRoli(rola);
+            List<string> kluczGłównyPracowników = KluczGlowny(TabelaZPracownikami);
+
+            //fartowne
+            var pairs = KluczGłównyRól.Select((t, i) => new KeyValuePair<string, string>(t, idRoli[i])).ToList();
+            pairs.AddRange(kluczGłównyPracowników.Select((t, i) => new KeyValuePair<string, string>(t, idPracownika[i])));
+            
+            Insert(TabelaZPrzypisaniemRól,pairs,true);
+        }
+
+        public static bool UsuńRolę(string rola, string użytkownik, bool wymuś = false) {
+            List<string> idPracownika = IdPracownika(użytkownik);
+            List<string> idRoli = IdRoli(rola);
+            List<string> kluczGłównyPracowników = KluczGlowny(TabelaZPracownikami);
+
+            //fartowne
+            var pairs = KluczGłównyRól.Select((t, i) => new KeyValuePair<string, string>(t, idRoli[i])).ToList();
+            pairs.AddRange(
+                kluczGłównyPracowników.Select((t, i) => new KeyValuePair<string, string>(t, idPracownika[i])));
+
+            if (!wymuś && idUzytejRoli.SequenceEqual(idRoli) &&
+                idZalogowanegoPracownika.SequenceEqual(idPracownika)) return false;
+            Delete(TabelaZPrzypisaniemRól, pairs);
+            return true;
         }
     }
 }
