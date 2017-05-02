@@ -13,7 +13,7 @@ namespace bsk___proba_2
     public partial class StwórzEdytuj : Window {
         Dictionary<string, string> AktualneUprawnieniaAdmińskie;
         Dictionary<string, string> AktualneUprawnieniaUsera;
-        private List<string> idEdytowanej;
+        private List<KeyValuePair<string, string>> idEdytowanej;
 
         public StwórzEdytuj() {
             InitializeComponent();
@@ -41,9 +41,9 @@ namespace bsk___proba_2
             int findIndex = nazwyKolumn.FindIndex(s => porównywarka(s,nazwaKolmnyRól));
             TextBoxNazwy.Text = dane[findIndex];
             List<string> kluczGlownyRól = RBACowyConnector.KluczGlownyRól();
-            idEdytowanej = new List<string>();
+            idEdytowanej = new List<KeyValuePair<string, string>>();
             for (var i = 0; i < kluczGlownyRól.Count; i++)
-                idEdytowanej.Add(dane[i]);
+                idEdytowanej.Add(new KeyValuePair<string, string>(kluczGlownyRól[i],dane[i]));
 
             string kolumnaCzyAdmin = RBACowyConnector.GetNazwaKolumnyCzyAdmin();
 
@@ -135,7 +135,20 @@ namespace bsk___proba_2
             var kolAtr = CheckBoxAdmiński.IsChecked == true
                 ? new List<KeyValuePair<string, string>>(AktualneUprawnieniaAdmińskie)
                 : new List<KeyValuePair<string, string>>(AktualneUprawnieniaUsera);
-            RBACowyConnector.NowaRola(TextBoxNazwy.Text, kolAtr);
+            try
+            {
+                if (idEdytowanej == null)
+                    RBACowyConnector.NowaRola(TextBoxNazwy.Text, kolAtr);
+                else
+                {
+                    kolAtr.Add(new KeyValuePair<string, string>(RBACowyConnector.GetNazwaKolmnyRól(), TextBoxNazwy.Text));
+                    RBACowyConnector.EdycjaRoli(idEdytowanej, kolAtr);
+                }
+            }
+            catch (RBACowyConnector.Bledy ex)
+            {
+                ObsługaBłędów.ObsłużBłąd(ex.Kod,ex.Wiadomosc);
+            }
             Close();
         }
     }

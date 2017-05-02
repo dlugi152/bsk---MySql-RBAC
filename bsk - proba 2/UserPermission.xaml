@@ -16,7 +16,7 @@
         <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Center" Height="1" Margin="0,404,0,0" VerticalAlignment="Top" Width="304"/>
         <Label Content="Usuń wybrane role" HorizontalAlignment="Left" Margin="12,423,0,0" VerticalAlignment="Top"/>
         <ListBox Name="ListBoxWszystkichRól" HorizontalAlignment="Left" Height="137" Margin="12,454,0,0" VerticalAlignment="Top" Width="163" SelectionMode="Multiple" />
-        <Button Content="Usuń wybrane role" HorizontalAlignment="Left" Margin="194,454,0,0" VerticalAlignment="Top" Width="108"/>
+        <Button Content="Usuń wybrane role" HorizontalAlignment="Left" Margin="194,454,0,0" VerticalAlignment="Top" Width="108" Click="Button_Click_2"/>
         <Button Name="ButtonEdycjiRól" Content="Oglądaj/Edytuj rolę" HorizontalAlignment="Left" Margin="195,360,0,0" VerticalAlignment="Top" Width="110" IsEnabled="False" Click="ButtonEdycjiRól_Click"/>
         <ComboBox Name="ComboBoxEdycjiRól" Visibility="Visible" HorizontalAlignment="Left" Margin="227,307,0,0" VerticalAlignment="Top" Width="75" Height="19" SelectionChanged="ComboBoxEdycjiRól_SelectionChanged"/>
         <Label Content="Wybierz rolę" HorizontalAlignment="Left" Margin="227,276,0,0" VerticalAlignment="Top"/>

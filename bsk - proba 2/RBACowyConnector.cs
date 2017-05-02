@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using MySql.Data.MySqlClient;
 
 namespace bsk___proba_2 {
@@ -22,8 +23,13 @@ namespace bsk___proba_2 {
         private const string NazwaKolumnyCzyAdmin = "adminska";
         private const string NazwaKolumnyRoli = "nazwa";
         private const string TabelaZPrzypisaniemRól = "przypisanie_roli";
+        private static bool wymuszanieDostępu;
 
-        private static readonly List<string> TabeleAdmińskie = new List<string> {TabelaZRolami, TabelaZPrzypisaniemRól, TabelaZPracownikami};
+        private static readonly List<string> TabeleAdmińskie =
+            new List<string> {TabelaZRolami, TabelaZPrzypisaniemRól, TabelaZPracownikami};
+
+        private static readonly List<string> TabeleSpecjalne =
+            new List<string> {"information_schema.columns", "information_schema"};
 
         public enum KodyBledow {
             BlednyLoginHaslo,
@@ -71,40 +77,38 @@ namespace bsk___proba_2 {
                                    "PORT=" + RBACowyConnector.port;
             try {
                 polaczenie = new MySqlConnection(connectionString);
+                WymuszanieWłączone();
                 TestujPolaczenie();
                 UstawIdZalogowanego();
                 UstawKluczGłównyRól();
+                WymuszanieWyłączone();
             }
             catch (Exception ex) {
                 throw ex;
             }
         }
 
+        private static void WymuszanieWyłączone() {
+            wymuszanieDostępu = false;
+        }
+
+        private static void WymuszanieWłączone() {
+            wymuszanieDostępu = true;
+        }
+
         private static void UstawKluczGłównyRól() {
+            WymuszanieWłączone();
             KluczGłównyRól = KluczGlowny(TabelaZRolami);
+            WymuszanieWyłączone();
         }
 
         private static List<string> IdPracownika(string login) {
-            string glowny = KluczGlowny(TabelaZPracownikami).Aggregate("(", (current, s) => current + s + ", ");
-            glowny = glowny.Remove(glowny.Length - 2);
-            glowny += ")";
-            string query = "SELECT " + glowny + " FROM " + TabelaZPracownikami + " WHERE " + NazwaKolumnyLoginow +
-                           " = @login";
-            List<string> idUżytkownika = new List<string>();
-            if (OtworzPolaczenie()) {
-                //brak sprawdzania czy można selectować tabelę z pracownikami
-                MySqlCommand cmd = new MySqlCommand(query, polaczenie);
-                cmd.Parameters.Add(new MySqlParameter("@login", login));
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                dataReader.Read(); //zał. loginy są unikalne
-                for (int i = 0; i < dataReader.FieldCount; i++)
-                    idUżytkownika.Add(dataReader.GetString(i));
-
-                dataReader.Close();
-                ZamknijPolaczenie();
-            }
-            return idUżytkownika;
+            WymuszanieWłączone();
+            List<string> list = Select(TabelaZPracownikami,
+                new List<KeyValuePair<string, string>> {new KeyValuePair<string, string>(NazwaKolumnyLoginow, login)},
+                KluczGlowny(TabelaZPracownikami))[0];
+            WymuszanieWyłączone();
+            return list;
         }
 
         private static void UstawIdZalogowanego() {
@@ -112,28 +116,20 @@ namespace bsk___proba_2 {
         }
 
         private static List<string> IdRoli(string nazwa) {
-            string query = " SELECT " + KluczGlowny(TabelaZRolami).Aggregate("", (current, s) => current + s + ", ") +
-                           NazwaKolumnyCzyAdmin + " FROM " + TabelaZRolami + " WHERE " + NazwaKolumnyRoli +
-                           " = @nazwa";
-            List<string> idRoli = new List<string>();
-            if (OtworzPolaczenie()) {
-                //brak sprawdzania czy można selectować tabelę z rolami
-                MySqlCommand cmd = new MySqlCommand(query, polaczenie);
-                cmd.Parameters.Add(new MySqlParameter("@nazwa", nazwa));
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                dataReader.Read(); //zał. nazwy ról są unikalne
-                for (int i = 0; i < dataReader.FieldCount - 1; i++) //-1, bo wyzej czyadmin jest ostatnie
-                    idRoli.Add(dataReader.GetString(i));
-                czyAdmin = Boolean.Parse(dataReader.GetString(dataReader.FieldCount - 1));
-                dataReader.Close();
-                ZamknijPolaczenie();
-            }
-            return idRoli;
+            List<string> selectowane = KluczGlowny(TabelaZRolami);
+            selectowane.Add(NazwaKolumnyCzyAdmin);
+            List<string> list = Select(TabelaZRolami,
+                new List<KeyValuePair<string, string>> {new KeyValuePair<string, string>(NazwaKolumnyRoli, nazwa)},
+                selectowane)[0];
+            czyAdmin = Boolean.Parse(list[list.Count - 1]);
+            list.RemoveAt(list.Count - 1);
+            return list;
         }
 
         public static void UstawAktualnąRolę(string nazwa) {
+            WymuszanieWłączone(); //chcę przeczytać z tabeli id, a nie mam ustawionej roli, więc wymuszam dostęp
             idUzytejRoli = IdRoli(nazwa);
+            WymuszanieWyłączone();
         }
 
         private static bool TestujPolaczenie() {
@@ -265,8 +261,7 @@ namespace bsk___proba_2 {
             zapytanie = kluczGlowny.Aggregate(zapytanie,
                 (current, pair) => current + "(" + pair.Key + " = @" + pair.Key + ") AND ");
             zapytanie = zapytanie.Remove(zapytanie.Length - 5);
-
-
+            
             if (CanDelete(tabela)) {
                 if (!OtworzPolaczenie()) return;
                 try {
@@ -311,62 +306,27 @@ namespace bsk___proba_2 {
             return list;
         }
 
+        //nieprzetestowane!!!!!!!
         private static string DomyślnaWartość(string tabela, string kolumna) {
-            string zapytanie = "SELECT Column_Default FROM information_schema.columns " +
-                               "WHERE (`TABLE_NAME` = @tabela)  AND (`COLUMN_NAME` = @kolumna);";
             string domyślna = "";
-
-            if (OtworzPolaczenie()) {
-                //if (CanSelect(tabela)) {
-                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                cmd.Parameters.Add(new MySqlParameter("@tabela", tabela));
-                cmd.Parameters.Add(new MySqlParameter("@kolumna", kolumna));
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                dataReader.Read();
-                try {
-                    domyślna = dataReader.GetString(0);
-                }
-                catch (Exception) {
-                }
-                finally {
-
-                    dataReader.Close();
-                    //}
-                    //else {
-                    //    ZamknijPolaczenie();
-                    //    throw new Bledy(KodyBledow.BrakSelect);
-                    //}
-                    ZamknijPolaczenie();
-                }
+            try {
+                domyślna = Select(tabela: "information_schema.columns",
+                    @where: new List<KeyValuePair<string, string>> {
+                        new KeyValuePair<string, string>("TABLE_NAME", tabela),
+                        new KeyValuePair<string, string>("COLUMN_NAME", kolumna)
+                    }, kolumny: new List<string> {"Column_Default"})[0][0];
+            }
+            catch (Exception) {
             }
             return domyślna;
         }
 
         public static List<string> KluczGlowny(string tabela) {
-            string zapytanie = "SELECT COLUMN_NAME FROM information_schema.columns " +
-                               "WHERE (`TABLE_NAME` = @tabela)  AND (`COLUMN_KEY` = \'PRI\');";
-
-            List<string> glowny = new List<string>();
-
-            if (OtworzPolaczenie()) {
-                //if (CanSelect(tabela)) {
-                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                cmd.Parameters.Add(new MySqlParameter("@tabela", tabela));
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                while (dataReader.Read())
-                    glowny.Add(dataReader.GetString(0));
-
-                dataReader.Close();
-                //}
-                //else {
-                //    ZamknijPolaczenie();
-                //    throw new Bledy(KodyBledow.BrakSelect);
-                //}
-                ZamknijPolaczenie();
-            }
-            return glowny;
+            return Select("information_schema.columns",
+                new List<KeyValuePair<string, string>> {
+                    new KeyValuePair<string, string>("TABLE_NAME", tabela),
+                    new KeyValuePair<string, string>("COLUMN_KEY", "PRI")
+                }, new List<string> {"COLUMN_NAME"})[0];
         }
 
         public static List<string> ListaKolumn(string tabela) {
@@ -394,13 +354,16 @@ namespace bsk___proba_2 {
             return list;
         }
 
-        public static List<List<string>> Select(string tabela, List<string> id = null) {
-            string query = "SELECT * FROM " + tabela;
-            List<string> glowny = null;
-            if (id != null && id.Count > 0) {
+        private static List<List<string>> Select(string tabela, List<KeyValuePair<string, string>> where,
+            List<string> kolumny = null) {
+            if (kolumny == null)
+                kolumny = new List<string> {"*"};
+            string query = kolumny.Aggregate("SELECT ", (current, s) => current + s + ",");
+            query = query.Remove(query.Length - 1);
+            query += " FROM " + tabela;
+            if (where != null && where.Count > 0) {
                 query += " WHERE ";
-                glowny = KluczGlowny(tabela);
-                query = glowny.Aggregate(query, (current, s) => current + s + " = @" + s + " and ");
+                query = where.Aggregate(query, (current, pair) => current + pair.Key + " = @" + pair.Key + " and ");
                 query = query.Remove(query.Length - 5);
             }
             List<List<string>> list = new List<List<string>>();
@@ -408,9 +371,9 @@ namespace bsk___proba_2 {
             if (CanSelect(tabela)) {
                 if (OtworzPolaczenie()) {
                     MySqlCommand cmd = new MySqlCommand(query, polaczenie);
-                    if (id != null && id.Count > 0 && glowny != null)
-                        for (var i = 0; i < glowny.Count; i++)
-                            cmd.Parameters.Add("@" + glowny[i], id[i]);
+                    if (where != null && where.Count > 0)
+                        foreach (KeyValuePair<string, string> t in @where)
+                            cmd.Parameters.Add("@" + t.Key, t.Value);
                     MySqlDataReader dataReader = cmd.ExecuteReader();
 
                     while (dataReader.Read()) {
@@ -428,7 +391,19 @@ namespace bsk___proba_2 {
             return list;
         }
 
+        public static List<List<string>> Select(string tabela, List<string> id = null) {
+            List<string> kluczGlowny = KluczGlowny(tabela);
+            if (id == null || id.Count <= 0) return Select(tabela, null, null);
+            List<KeyValuePair<string, string>> pairs = kluczGlowny
+                .Select((s, i) => new KeyValuePair<string, string>(s, id[i])).ToList();
+            return Select(tabela, pairs);
+        }
+
         private static string SelectUprawnienia(string table) {
+            if (TabeleSpecjalne.FindIndex(s => s.Equals(table, StringComparison.InvariantCultureIgnoreCase)) > -1)
+                return "s---";
+            //czy na pewno na to zezwalać?
+
             string zapytanie = "SELECT " + table + " FROM " + TabelaZRolami + " WHERE (";
             zapytanie = KluczGłównyRól.Aggregate(zapytanie, (current, t) => current + t + " = @" + t + " and ");
             zapytanie = zapytanie.Remove(zapytanie.Length - 5);
@@ -448,23 +423,30 @@ namespace bsk___proba_2 {
         }
 
         public static bool CanSelect(string table) {
-            return CzyZalogowanyAdmin() || SelectUprawnienia(table)[0] != '-';
+            return Wymuszanie() || CzyZalogowanyAdmin() || SelectUprawnienia(table)[0] != '-';
+        }
+
+        private static bool Wymuszanie() {
+            return wymuszanieDostępu;
         }
 
         public static bool CanInsert(string table) {
-            return CzyZalogowanyAdmin() || SelectUprawnienia(table)[1] != '-';
+            return Wymuszanie() || CzyZalogowanyAdmin() || SelectUprawnienia(table)[1] != '-';
         }
 
         public static bool CanUpdate(string table) {
-            return CzyZalogowanyAdmin() || SelectUprawnienia(table)[2] != '-';
+            return Wymuszanie() || CzyZalogowanyAdmin() || SelectUprawnienia(table)[2] != '-';
         }
 
         public static bool CanDelete(string table) {
-            return CzyZalogowanyAdmin() || SelectUprawnienia(table)[3] != '-';
+            return Wymuszanie() || CzyZalogowanyAdmin() || SelectUprawnienia(table)[3] != '-';
         }
 
         public static List<string> MojeRoleNazwy() {
-            return RoleUżytkownika(login);
+            WymuszanieWłączone();
+            List<string> list = RoleUżytkownika(login);
+            WymuszanieWyłączone();
+            return list;
         }
 
         private static List<string> SelectJednąKolumnę(string kolumna, string tabela) {
@@ -531,7 +513,7 @@ namespace bsk___proba_2 {
             return listaRól;
         }
 
-        public static void DodajRolę(string rola, string użytkownik) {
+        public static void DodajPrzypisanieRoli(string rola, string użytkownik) {
             List<string> idPracownika = IdPracownika(użytkownik);
             List<string> idRoli = IdRoli(rola);
             List<string> kluczGłównyPracowników = KluczGlowny(TabelaZPracownikami);
@@ -544,7 +526,7 @@ namespace bsk___proba_2 {
             Insert(TabelaZPrzypisaniemRól, pairs, true);
         }
 
-        public static bool UsuńRolę(string rola, string użytkownik, bool wymuś = false) {
+        public static bool UsuńPrzypisanieRoli(string rola, string użytkownik, bool wymuś = false) {
             List<string> idPracownika = IdPracownika(użytkownik);
             List<string> idRoli = IdRoli(rola);
             List<string> kluczGłównyPracowników = KluczGlowny(TabelaZPracownikami);
@@ -562,7 +544,12 @@ namespace bsk___proba_2 {
 
         public static void NowaRola(string nazwa, List<KeyValuePair<string, string>> kolAtr) {
             kolAtr.Add(new KeyValuePair<string, string>(NazwaKolumnyRoli, nazwa));
-            Insert(TabelaZRolami,kolAtr);
+            try {
+                Insert(TabelaZRolami, kolAtr);
+            }
+            catch (Bledy ex) {
+                throw ex;
+            }
         }
 
         public static List<string> ListaKolumnRól() {
@@ -589,6 +576,28 @@ namespace bsk___proba_2 {
 
         public static string GetNazwaKolumnyCzyAdmin() {
             return NazwaKolumnyCzyAdmin;
+        }
+
+        public static void EdycjaRoli(List<KeyValuePair<string, string>> idEdytowanej,
+            List<KeyValuePair<string, string>> kolAtr) {
+            Update(TabelaZRolami, kolAtr, idEdytowanej);
+        }
+
+        public static void UsuńRolę(string nazwaRoli) {
+            List<string> idRoli = IdRoli(nazwaRoli);
+            List<string> kluczGlowny = KluczGlowny(TabelaZRolami);
+            List<KeyValuePair<string, string>> pairs = kluczGlowny
+                .Select((t, i) => new KeyValuePair<string, string>(t, idRoli[i])).ToList();
+            Delete(TabelaZRolami, pairs);
+
+            List<List<string>> list = Select(TabelaZPrzypisaniemRól, pairs, KluczGlowny(TabelaZPrzypisaniemRól));
+            foreach (List<string> pojedynczePrzypisanie in list) {
+                List<string> nazwyGłownegoPrzypisania = KluczGlowny(TabelaZPrzypisaniemRól);
+                List<KeyValuePair<string, string>> pairs2 =
+                    nazwyGłownegoPrzypisania
+                        .Select((s, i) => new KeyValuePair<string, string>(s, pojedynczePrzypisanie[i])).ToList();
+                Delete(TabelaZPrzypisaniemRól, pairs2);
+            }
         }
     }
 }

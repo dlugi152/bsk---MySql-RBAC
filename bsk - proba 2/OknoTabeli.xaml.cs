@@ -47,7 +47,7 @@ namespace bsk___proba_2 {
                 dopasujRozmiar();
             }
             catch (RBACowyConnector.Bledy blad) {
-                ObslugaBledow(blad.Kod,blad.Wiadomosc);
+                ObsługaBłędów.ObsłużBłąd(blad.Kod,blad.Wiadomosc);
             }
         }
 
@@ -86,7 +86,7 @@ namespace bsk___proba_2 {
                 RBACowyConnector.Insert(tabela, kolWart);
             }
             catch (RBACowyConnector.Bledy blad) {
-                ObslugaBledow(blad.Kod,blad.Wiadomosc);
+                ObsługaBłędów.ObsłużBłąd(blad.Kod, blad.Wiadomosc);
             }
             PrzeladujDane(); //najprościej i bezbłędnie
         }
@@ -102,7 +102,7 @@ namespace bsk___proba_2 {
                         RBACowyConnector.Delete(tabela, idKlucza);
                     }
                     catch (RBACowyConnector.Bledy blad) {
-                        ObslugaBledow(blad.Kod, blad.Wiadomosc);
+                        ObsługaBłędów.ObsłużBłąd(blad.Kod, blad.Wiadomosc);
                     }
                 }
                 PrzeladujDane();
@@ -154,43 +154,11 @@ namespace bsk___proba_2 {
                 RBACowyConnector.Update(tabela, kolWart, idKlucza);
             }
             catch (RBACowyConnector.Bledy blad) {
-                ObslugaBledow(blad.Kod, blad.Wiadomosc);
+                ObsługaBłędów.ObsłużBłąd(blad.Kod, blad.Wiadomosc);
             }
             finally {
                 PrzeladujDane();
                 e.Cancel = true; //ta jasne, true...
-            }
-        }
-
-        private void ObslugaBledow(RBACowyConnector.KodyBledow kod, string wiadomosc) {
-            switch (kod) {
-                case RBACowyConnector.KodyBledow.BlednyLoginHaslo:
-                    MessageBox.Show("Błędny login lub hasło");
-                    break;
-                case RBACowyConnector.KodyBledow.BladLaczenia:
-                    MessageBox.Show("Błąd podczas łaczenia z bazą");
-                    break;
-                case RBACowyConnector.KodyBledow.InnyBlad:
-                    MessageBox.Show("Nieznany błąd");
-                    break;
-                case RBACowyConnector.KodyBledow.NieMoznaZamknac:
-                    MessageBox.Show("Nie masz praw do edytowania");
-                    break;
-                case RBACowyConnector.KodyBledow.BrakInsert:
-                    MessageBox.Show("Nie masz praw do insertowania");
-                    break;
-                case RBACowyConnector.KodyBledow.BrakSelect:
-                    MessageBox.Show("Nie masz praw do selectowania");
-                    break;
-                case RBACowyConnector.KodyBledow.BrakDelete:
-                    MessageBox.Show("Nie masz praw do deletowania");
-                    break;
-                case RBACowyConnector.KodyBledow.BrakUpdate:
-                    MessageBox.Show("Nie masz praw do edytowania");
-                    break;
-                case RBACowyConnector.KodyBledow.BledneZapytanie:
-                    MessageBox.Show(wiadomosc);
-                    break;
             }
         }
 

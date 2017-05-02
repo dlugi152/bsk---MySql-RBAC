@@ -57,8 +57,8 @@ namespace bsk___proba_2
             bool wylogować = false;
             foreach (string item in ListBoxPrzypisanychRól.Items)
                 if (ListBoxPrzypisanychRól.SelectedItems.Contains(item))
-                    RBACowyConnector.DodajRolę(item, wybranyUżytkownik);
-                else if (RBACowyConnector.UsuńRolę(item, wybranyUżytkownik) == false) {
+                    RBACowyConnector.DodajPrzypisanieRoli(item, wybranyUżytkownik);
+                else if (RBACowyConnector.UsuńPrzypisanieRoli(item, wybranyUżytkownik) == false) {
                     MessageBoxResult dr =
                         MessageBox.Show(
                             "Próbujesz usunąć sobie rolę, którą aktualnie używasz.\n" +
@@ -66,7 +66,7 @@ namespace bsk___proba_2
                             "Po wykonaniu zapytania zostaniesz wylogowany",
                             "Ostrzeżenie", MessageBoxButton.YesNo);
                     if (dr == MessageBoxResult.Yes || dr == MessageBoxResult.OK) {
-                        RBACowyConnector.UsuńRolę(item, wybranyUżytkownik, true);
+                        RBACowyConnector.UsuńPrzypisanieRoli(item, wybranyUżytkownik, true);
                         wylogować = true;
                     }
                 }
@@ -80,14 +80,21 @@ namespace bsk___proba_2
         }
 
         private void ButtonEdycjiRól_Click(object sender, RoutedEventArgs e) {
-            if (ComboBoxEdycjiRól.SelectedItem != null) {
-                List<string> nazwyKolumn = RBACowyConnector.ListaKolumnRól();
-                List<string> dane = RBACowyConnector.WierszRól(ComboBoxEdycjiRól.SelectedItem.ToString());
-                StwórzEdytuj win2 = new StwórzEdytuj(nazwyKolumn,dane);
-                win2.ShowDialog();
-                PrzeładujWszystkieRole();
-                PrzeładujZaznaczoneRole(wybranyUżytkownik);
-            }
+            if (ComboBoxEdycjiRól.SelectedItem == null) return;
+            List<string> nazwyKolumn = RBACowyConnector.ListaKolumnRól();
+            List<string> dane = RBACowyConnector.WierszRól(ComboBoxEdycjiRól.SelectedItem.ToString());
+            StwórzEdytuj win2 = new StwórzEdytuj(nazwyKolumn,dane);
+            win2.ShowDialog();
+            PrzeładujWszystkieRole();
+            PrzeładujZaznaczoneRole(wybranyUżytkownik);
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e) {
+            if (ListBoxWszystkichRól.SelectedItems == null) return;
+            foreach (string item in ListBoxWszystkichRól.SelectedItems)
+                RBACowyConnector.UsuńRolę(item);
+            PrzeładujWszystkieRole();
+            PrzeładujZaznaczoneRole(wybranyUżytkownik);
         }
     }
 }
