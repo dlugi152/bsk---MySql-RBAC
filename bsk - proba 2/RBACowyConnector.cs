@@ -23,8 +23,7 @@ namespace bsk___proba_2 {
         private const string NazwaKolumnyRoli = "nazwa";
         private const string TabelaZPrzypisaniemRól = "przypisanie_roli";
 
-        private static readonly IList<string> TabeleAdmińskie = new ReadOnlyCollection<string>
-            (new List<string> {TabelaZRolami, TabelaZPrzypisaniemRól, TabelaZPracownikami});
+        private static readonly List<string> TabeleAdmińskie = new List<string> {TabelaZRolami, TabelaZPrzypisaniemRól, TabelaZPracownikami};
 
         public enum KodyBledow {
             BlednyLoginHaslo,
@@ -395,13 +394,23 @@ namespace bsk___proba_2 {
             return list;
         }
 
-        public static List<List<string>> Select(string tabela) {
+        public static List<List<string>> Select(string tabela, List<string> id = null) {
             string query = "SELECT * FROM " + tabela;
+            List<string> glowny = null;
+            if (id != null && id.Count > 0) {
+                query += " WHERE ";
+                glowny = KluczGlowny(tabela);
+                query = glowny.Aggregate(query, (current, s) => current + s + " = @" + s + " and ");
+                query = query.Remove(query.Length - 5);
+            }
             List<List<string>> list = new List<List<string>>();
 
             if (CanSelect(tabela)) {
                 if (OtworzPolaczenie()) {
                     MySqlCommand cmd = new MySqlCommand(query, polaczenie);
+                    if (id != null && id.Count > 0 && glowny != null)
+                        for (var i = 0; i < glowny.Count; i++)
+                            cmd.Parameters.Add("@" + glowny[i], id[i]);
                     MySqlDataReader dataReader = cmd.ExecuteReader();
 
                     while (dataReader.Read()) {
@@ -554,6 +563,32 @@ namespace bsk___proba_2 {
         public static void NowaRola(string nazwa, List<KeyValuePair<string, string>> kolAtr) {
             kolAtr.Add(new KeyValuePair<string, string>(NazwaKolumnyRoli, nazwa));
             Insert(TabelaZRolami,kolAtr);
+        }
+
+        public static List<string> ListaKolumnRól() {
+            return ListaKolumn(TabelaZRolami);
+        }
+
+        public static List<string> WierszRól(string nazwaRoli) {
+            List<string> idRoli = IdRoli(nazwaRoli);
+            List<List<string>> list = Select(TabelaZRolami, idRoli);
+            return list[0].ToList();
+        }
+
+        public static string GetNazwaKolmnyRól() {
+            return NazwaKolumnyRoli;
+        }
+
+        public static List<string> KluczGlownyRól() {
+            return KluczGlowny(TabelaZRolami);
+        }
+
+        public static bool CzyTabelaAdmińska(string s) {
+            return TabeleAdmińskie.FindIndex(s2 => s2.Equals(s, StringComparison.InvariantCultureIgnoreCase)) > -1;
+        }
+
+        public static string GetNazwaKolumnyCzyAdmin() {
+            return NazwaKolumnyCzyAdmin;
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Media.TextFormatting;
@@ -11,6 +13,7 @@ namespace bsk___proba_2
     public partial class StwórzEdytuj : Window {
         Dictionary<string, string> AktualneUprawnieniaAdmińskie;
         Dictionary<string, string> AktualneUprawnieniaUsera;
+        private List<string> idEdytowanej;
 
         public StwórzEdytuj() {
             InitializeComponent();
@@ -22,6 +25,40 @@ namespace bsk___proba_2
                 AktualneUprawnieniaUsera.Add(s, "----");
             foreach (string s in RBACowyConnector.ListaTabel(true))
                 AktualneUprawnieniaAdmińskie.Add(s, "----");
+            idEdytowanej = null;
+        }
+
+        private bool porównywarka(string a, string b) {
+            return a.Equals(b, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        public StwórzEdytuj(List<string> nazwyKolumn, List<string> dane) {
+            InitializeComponent();
+            AktualneUprawnieniaAdmińskie = new Dictionary<string, string>();
+            AktualneUprawnieniaUsera = new Dictionary<string, string>();
+
+            string nazwaKolmnyRól = RBACowyConnector.GetNazwaKolmnyRól();
+            int findIndex = nazwyKolumn.FindIndex(s => porównywarka(s,nazwaKolmnyRól));
+            TextBoxNazwy.Text = dane[findIndex];
+            List<string> kluczGlownyRól = RBACowyConnector.KluczGlownyRól();
+            idEdytowanej = new List<string>();
+            for (var i = 0; i < kluczGlownyRól.Count; i++)
+                idEdytowanej.Add(dane[i]);
+
+            string kolumnaCzyAdmin = RBACowyConnector.GetNazwaKolumnyCzyAdmin();
+
+            for (var i = 0; i < nazwyKolumn.Count; i++) {
+                string s = nazwyKolumn[i].ToLower();
+                if (kluczGlownyRól.FindIndex(s2 => porównywarka(s2,s))>-1
+                                                   || porównywarka(nazwaKolmnyRól,s)
+                                                   || porównywarka(kolumnaCzyAdmin,s)) continue;
+                if (RBACowyConnector.CzyTabelaAdmińska(s))
+                    AktualneUprawnieniaAdmińskie.Add(s, dane[i]);
+                else
+                    AktualneUprawnieniaUsera.Add(s, dane[i]);
+            }
+            CheckBoxAdmiński.IsChecked = AktualneUprawnieniaAdmińskie.Any(pair => pair.Value != "----");
+            ZaladujTabele();
         }
 
         private void ZaladujTabele() {

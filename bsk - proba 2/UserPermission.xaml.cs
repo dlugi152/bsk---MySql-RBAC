@@ -74,5 +74,20 @@ namespace bsk___proba_2
                 Close();
             PrzeładujZaznaczoneRole(wybranyUżytkownik);
         }
+
+        private void ComboBoxEdycjiRól_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            ButtonEdycjiRól.IsEnabled = true;
+        }
+
+        private void ButtonEdycjiRól_Click(object sender, RoutedEventArgs e) {
+            if (ComboBoxEdycjiRól.SelectedItem != null) {
+                List<string> nazwyKolumn = RBACowyConnector.ListaKolumnRól();
+                List<string> dane = RBACowyConnector.WierszRól(ComboBoxEdycjiRól.SelectedItem.ToString());
+                StwórzEdytuj win2 = new StwórzEdytuj(nazwyKolumn,dane);
+                win2.ShowDialog();
+                PrzeładujWszystkieRole();
+                PrzeładujZaznaczoneRole(wybranyUżytkownik);
+            }
+        }
     }
 }
