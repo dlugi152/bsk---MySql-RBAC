@@ -12,7 +12,7 @@ namespace bsk___proba_2
         {
             InitializeComponent();
 
-            List<string> list = RBACowyConnector.ListaTabel();
+            List<string> list = RBACowyConnector.ListaTabel(null);
             Tabele.Items.Clear();
             foreach (string list1 in list)
                 Tabele.Items.Add(list1);

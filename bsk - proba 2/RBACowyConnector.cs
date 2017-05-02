@@ -16,12 +16,12 @@ namespace bsk___proba_2 {
         private static List<string> KluczGłównyRól;
         private static bool czyAdmin;
         private const string NazwaBazy = "bsk";
-        private const string TabelaZPracownikami = "Pracownik";
-        private const string TabelaZRolami = "Rola";
-        private const string NazwaKolumnyLoginow = "Login_Uzytkownika";
-        private const string NazwaKolumnyCzyAdmin = "Adminska";
-        private const string NazwaKolumnyRoli = "Nazwa";
-        private const string TabelaZPrzypisaniemRól = "Przypisanie_Roli";
+        private const string TabelaZPracownikami = "pracownik";
+        private const string TabelaZRolami = "rola";
+        private const string NazwaKolumnyLoginow = "login_uzytkownika";
+        private const string NazwaKolumnyCzyAdmin = "adminska";
+        private const string NazwaKolumnyRoli = "nazwa";
+        private const string TabelaZPrzypisaniemRól = "przypisanie_roli";
 
         private static readonly IList<string> TabeleAdmińskie = new ReadOnlyCollection<string>
             (new List<string> {TabelaZRolami, TabelaZPrzypisaniemRól, TabelaZPracownikami});
@@ -170,8 +170,7 @@ namespace bsk___proba_2 {
             }
         }
 
-        public static void Insert(string tabela, List<KeyValuePair<string, string>> kolAtr, bool nieIstnieją = false)
-        {
+        public static void Insert(string tabela, List<KeyValuePair<string, string>> kolAtr, bool nieIstnieją = false) {
             string zapytanie = "INSERT INTO " + tabela + " (";
             //gdy ktoś poda pustego stringa to albo będzie wartość domyślna, albo błędne zapytanie (message box)
             zapytanie = kolAtr.Where(pair => pair.Value != "")
@@ -179,7 +178,7 @@ namespace bsk___proba_2 {
             zapytanie = zapytanie.Remove(zapytanie.Length - 2);
             //usuwanie niepotrzebnego przecinka i spacji z poprzedniej pętli
             zapytanie += ") ";
-            if (nieIstnieją==false) {
+            if (nieIstnieją == false) {
                 zapytanie += "VALUES (";
                 zapytanie = kolAtr.Where(t => t.Value != "")
                     .Aggregate(zapytanie, (current, t) => current + "@" + t.Key + ", ");
@@ -188,8 +187,9 @@ namespace bsk___proba_2 {
             }
             else {
                 zapytanie += "SELECT ";
-                zapytanie = kolAtr.Where(pair => pair.Value != "").Aggregate(zapytanie, (current, pair) => current + "@" + pair.Key + ", ");
-                zapytanie=zapytanie.Remove(zapytanie.Length - 2);
+                zapytanie = kolAtr.Where(pair => pair.Value != "")
+                    .Aggregate(zapytanie, (current, pair) => current + "@" + pair.Key + ", ");
+                zapytanie = zapytanie.Remove(zapytanie.Length - 2);
                 zapytanie += " WHERE NOT EXISTS (SELECT * FROM " + tabela + " WHERE ";
                 foreach (KeyValuePair<string, string> pair in kolAtr)
                     if (pair.Value != "")
@@ -261,7 +261,7 @@ namespace bsk___proba_2 {
                 throw new Bledy(KodyBledow.BrakUpdate);
         }
 
-        public static void Delete(string tabela, List<KeyValuePair<string, string>> kluczGlowny, bool czyIstnieją = false) {
+        public static void Delete(string tabela, List<KeyValuePair<string, string>> kluczGlowny) {
             string zapytanie = "DELETE FROM " + tabela + " WHERE ";
             zapytanie = kluczGlowny.Aggregate(zapytanie,
                 (current, pair) => current + "(" + pair.Key + " = @" + pair.Key + ") AND ");
@@ -288,7 +288,7 @@ namespace bsk___proba_2 {
                 throw new Bledy(KodyBledow.BrakDelete);
         }
 
-        public static List<string> ListaTabel() {
+        public static List<string> ListaTabel(bool? admińskie) {
             string zapytanie = "show tables";
             List<string> list = new List<string>();
 
@@ -301,8 +301,13 @@ namespace bsk___proba_2 {
                     listaWszystkich.Add(dataReader.GetString(0));
                 dataReader.Close();
                 ZamknijPolaczenie();
-                list.AddRange(listaWszystkich.Where(
-                    nowy => CanSelect(nowy) || CanDelete(nowy) || CanInsert(nowy) || CanUpdate(nowy)));
+                if (admińskie == null)
+                    list.AddRange(listaWszystkich.Where(
+                        nowy => !TabeleAdmińskie.Contains(nowy) &&
+                                (CanSelect(nowy) || CanDelete(nowy) || CanInsert(nowy) || CanUpdate(nowy))));
+                else
+                    list.AddRange(listaWszystkich.Where(s => admińskie.Value && TabeleAdmińskie.Contains(s) ||
+                                                             !admińskie.Value && !TabeleAdmińskie.Contains(s)));
             }
             return list;
         }
@@ -323,7 +328,8 @@ namespace bsk___proba_2 {
                 try {
                     domyślna = dataReader.GetString(0);
                 }
-                catch (Exception) { }
+                catch (Exception) {
+                }
                 finally {
 
                     dataReader.Close();
@@ -456,10 +462,8 @@ namespace bsk___proba_2 {
             string query = "SELECT " + kolumna + " FROM " + tabela;
             List<string> wynik = new List<string>();
 
-            if (CzyZalogowanyAdmin() || CanSelect(tabela))
-            {
-                if (OtworzPolaczenie())
-                {
+            if (CzyZalogowanyAdmin() || CanSelect(tabela)) {
+                if (OtworzPolaczenie()) {
                     MySqlCommand cmd = new MySqlCommand(query, polaczenie);
                     MySqlDataReader dataReader = cmd.ExecuteReader();
 
@@ -525,9 +529,10 @@ namespace bsk___proba_2 {
 
             //fartowne
             var pairs = KluczGłównyRól.Select((t, i) => new KeyValuePair<string, string>(t, idRoli[i])).ToList();
-            pairs.AddRange(kluczGłównyPracowników.Select((t, i) => new KeyValuePair<string, string>(t, idPracownika[i])));
-            
-            Insert(TabelaZPrzypisaniemRól,pairs,true);
+            pairs.AddRange(
+                kluczGłównyPracowników.Select((t, i) => new KeyValuePair<string, string>(t, idPracownika[i])));
+
+            Insert(TabelaZPrzypisaniemRól, pairs, true);
         }
 
         public static bool UsuńRolę(string rola, string użytkownik, bool wymuś = false) {
@@ -544,6 +549,11 @@ namespace bsk___proba_2 {
                 idZalogowanegoPracownika.SequenceEqual(idPracownika)) return false;
             Delete(TabelaZPrzypisaniemRól, pairs);
             return true;
+        }
+
+        public static void NowaRola(string nazwa, List<KeyValuePair<string, string>> kolAtr) {
+            kolAtr.Add(new KeyValuePair<string, string>(NazwaKolumnyRoli, nazwa));
+            Insert(TabelaZRolami,kolAtr);
         }
     }
 }

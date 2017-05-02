@@ -12,39 +12,44 @@ namespace bsk___proba_2
     /// </summary>
     public partial class UserPermission : Window {
         private string wybranyUżytkownik;
-        public UserPermission()
-        {
+
+        public UserPermission() {
             InitializeComponent();
             foreach (string s in RBACowyConnector.ListaPracowników())
                 ComboBoxUŻytkowników.Items.Add(s);
-            foreach (string s in RBACowyConnector.ListaWszystkichRól()) {
-                ListBoxWszystkichRól.Items.Add(s);
-                ComboBoxEdycjiRól.Items.Add(s);
-            }
-
+            PrzeładujWszystkieRole();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-
+            StwórzEdytuj win2 = new StwórzEdytuj();
+            win2.ShowDialog();
+            PrzeładujWszystkieRole();
+            PrzeładujZaznaczoneRole(wybranyUżytkownik);
         }
 
-        private void PrzeładujPrzypisaneRole(string użytkownik) {
+        private void PrzeładujZaznaczoneRole(string użytkownik) {
             List<string> roleUżytkownika = RBACowyConnector.RoleUżytkownika(użytkownik);
+            ListBoxPrzypisanychRól.SelectedItems.Clear();
             foreach (string s in roleUżytkownika)
                 ListBoxPrzypisanychRól.SelectedItems.Add(s);
         }
 
+        private void PrzeładujWszystkieRole() {
+            ComboBoxEdycjiRól.Items.Clear();
+            ListBoxPrzypisanychRól.Items.Clear();
+            ListBoxWszystkichRól.Items.Clear();
+            foreach (string s in RBACowyConnector.ListaWszystkichRól()) {
+                ListBoxWszystkichRól.Items.Add(s);
+                ComboBoxEdycjiRól.Items.Add(s);
+                ListBoxPrzypisanychRól.Items.Add(s);
+            }
+        }
+
         private void ComboBoxUŻytkowników_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             wybranyUżytkownik = ComboBoxUŻytkowników.SelectedItem.ToString();
-            if (ListBoxPrzypisanychRól.Items.IsEmpty) {//wybieranie użytkownika pierwszy raz
-                foreach (object item in ListBoxWszystkichRól.Items)
-                    ListBoxPrzypisanychRól.Items.Add(item);
-                ButtonZatwierdzanie.IsEnabled = true;
-            }
-            else
-                ListBoxPrzypisanychRól.SelectedItems.Clear();
-            PrzeładujPrzypisaneRole(wybranyUżytkownik);
+            ButtonZatwierdzanie.IsEnabled = true;
+            PrzeładujZaznaczoneRole(wybranyUżytkownik);
             ListBoxPrzypisanychRól.Focus();
         }
 
@@ -67,7 +72,7 @@ namespace bsk___proba_2
                 }
             if (wylogować)
                 Close();
-            PrzeładujPrzypisaneRole(wybranyUżytkownik);
+            PrzeładujZaznaczoneRole(wybranyUżytkownik);
         }
     }
 }
