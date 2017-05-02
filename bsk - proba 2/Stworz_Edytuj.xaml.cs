@@ -14,6 +14,7 @@ namespace bsk___proba_2
         Dictionary<string, string> AktualneUprawnieniaAdmińskie;
         Dictionary<string, string> AktualneUprawnieniaUsera;
         private List<KeyValuePair<string, string>> idEdytowanej;
+        private bool blokujEdycję;
 
         public StwórzEdytuj() {
             InitializeComponent();
@@ -32,7 +33,7 @@ namespace bsk___proba_2
             return a.Equals(b, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        public StwórzEdytuj(List<string> nazwyKolumn, List<string> dane) {
+        public StwórzEdytuj(List<string> nazwyKolumn, List<string> dane, bool blokujEdycjęRoli) {
             InitializeComponent();
             AktualneUprawnieniaAdmińskie = new Dictionary<string, string>();
             AktualneUprawnieniaUsera = new Dictionary<string, string>();
@@ -59,6 +60,21 @@ namespace bsk___proba_2
             }
             CheckBoxAdmiński.IsChecked = AktualneUprawnieniaAdmińskie.Any(pair => pair.Value != "----");
             ZaladujTabele();
+            if (!blokujEdycjęRoli)
+                blokujEdycję = false;
+            else {
+                PoblokujPrzyciski();
+                blokujEdycję = true;
+            }
+        }
+
+        private void PoblokujPrzyciski() {
+            CheckBoxAdmiński.IsEnabled = false;
+            CheckBoxEdycji.IsEnabled = false;
+            CheckBoxOdczytu.IsEnabled = false;
+            CheckBoxUsuwania.IsEnabled = false;
+            CheckBoxZapisu.IsEnabled = false;
+            TextBoxNazwy.IsEnabled = false;
         }
 
         private void ZaladujTabele() {
@@ -132,22 +148,22 @@ namespace bsk___proba_2
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {
-            var kolAtr = CheckBoxAdmiński.IsChecked == true
-                ? new List<KeyValuePair<string, string>>(AktualneUprawnieniaAdmińskie)
-                : new List<KeyValuePair<string, string>>(AktualneUprawnieniaUsera);
-            try
-            {
-                if (idEdytowanej == null)
-                    RBACowyConnector.NowaRola(TextBoxNazwy.Text, kolAtr);
-                else
-                {
-                    kolAtr.Add(new KeyValuePair<string, string>(RBACowyConnector.GetNazwaKolmnyRól(), TextBoxNazwy.Text));
-                    RBACowyConnector.EdycjaRoli(idEdytowanej, kolAtr);
+            if (idEdytowanej == null || blokujEdycję != true) {
+                var kolAtr = CheckBoxAdmiński.IsChecked == true
+                    ? new List<KeyValuePair<string, string>>(AktualneUprawnieniaAdmińskie)
+                    : new List<KeyValuePair<string, string>>(AktualneUprawnieniaUsera);
+                try {
+                    if (idEdytowanej == null)
+                        RBACowyConnector.NowaRola(TextBoxNazwy.Text, kolAtr);
+                    else {
+                        kolAtr.Add(new KeyValuePair<string, string>(RBACowyConnector.GetNazwaKolmnyRól(),
+                            TextBoxNazwy.Text));
+                        RBACowyConnector.EdycjaRoli(idEdytowanej, kolAtr);
+                    }
                 }
-            }
-            catch (RBACowyConnector.Bledy ex)
-            {
-                ObsługaBłędów.ObsłużBłąd(ex.Kod,ex.Wiadomosc);
+                catch (RBACowyConnector.Bledy ex) {
+                    ObsługaBłędów.ObsłużBłąd(ex.Kod, ex.Wiadomosc);
+                }
             }
             Close();
         }

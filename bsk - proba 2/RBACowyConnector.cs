@@ -66,6 +66,12 @@ namespace bsk___proba_2 {
             return czyAdmin;
         }
 
+        private static bool CzyDostępDlaAdmina(string tabela) {
+            //czy automatycznie potwierdzić możliwość dostępu dla admina
+            //admin zawsze ma dostęp do tabel nie admińskich
+            return czyAdmin && TabeleAdmińskie.FindIndex(s=> s.Equals(tabela,StringComparison.InvariantCultureIgnoreCase))==-1;
+        }
+
         public static void Inicjalizuj(string serwer, string login, string haslo, string port) {
             RBACowyConnector.serwer = serwer;
             RBACowyConnector.login = login;
@@ -330,28 +336,10 @@ namespace bsk___proba_2 {
         }
 
         public static List<string> ListaKolumn(string tabela) {
-            string zapytanie = "SELECT column_name " +
-                               "FROM information_schema.columns " +
-                               "WHERE table_name=@tabela";
-            List<string> list = new List<string>();
-
-            if (CanSelect(tabela)) {
-                if (OtworzPolaczenie()) {
-                    MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                    cmd.Parameters.Add(new MySqlParameter("@tabela", tabela));
-                    MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                    while (dataReader.Read())
-                        list.Add(dataReader.GetString(0));
-                    //przy takim zapytaniu na pewno nie trzeba pętli, wystarczy (0)
-
-                    dataReader.Close();
-                    ZamknijPolaczenie();
-                }
-            }
-            else
-                throw new Bledy(KodyBledow.BrakSelect);
-            return list;
+            List<List<string>> list1 = Select("information_schema.columns",
+                new List<KeyValuePair<string, string>> {new KeyValuePair<string, string>("TABLE_NAME", tabela)},
+                new List<string> {"column_name"});
+            return list1.Select(list2 => list2[0]).ToList();
         }
 
         private static List<List<string>> Select(string tabela, List<KeyValuePair<string, string>> where,
@@ -400,6 +388,7 @@ namespace bsk___proba_2 {
         }
 
         private static string SelectUprawnienia(string table) {
+            //selecta w tej funkcji nie wrzucać do selecta ogólnego!!
             if (TabeleSpecjalne.FindIndex(s => s.Equals(table, StringComparison.InvariantCultureIgnoreCase)) > -1)
                 return "s---";
             //czy na pewno na to zezwalać?
@@ -423,7 +412,7 @@ namespace bsk___proba_2 {
         }
 
         public static bool CanSelect(string table) {
-            return Wymuszanie() || CzyZalogowanyAdmin() || SelectUprawnienia(table)[0] != '-';
+            return Wymuszanie() || CzyDostępDlaAdmina(table) || SelectUprawnienia(table)[0] != '-';
         }
 
         private static bool Wymuszanie() {
@@ -431,15 +420,15 @@ namespace bsk___proba_2 {
         }
 
         public static bool CanInsert(string table) {
-            return Wymuszanie() || CzyZalogowanyAdmin() || SelectUprawnienia(table)[1] != '-';
+            return Wymuszanie() || CzyDostępDlaAdmina(table) || SelectUprawnienia(table)[1] != '-';
         }
 
         public static bool CanUpdate(string table) {
-            return Wymuszanie() || CzyZalogowanyAdmin() || SelectUprawnienia(table)[2] != '-';
+            return Wymuszanie() || CzyDostępDlaAdmina(table) || SelectUprawnienia(table)[2] != '-';
         }
 
         public static bool CanDelete(string table) {
-            return Wymuszanie() || CzyZalogowanyAdmin() || SelectUprawnienia(table)[3] != '-';
+            return Wymuszanie() || CzyDostępDlaAdmina(table) || SelectUprawnienia(table)[3] != '-';
         }
 
         public static List<string> MojeRoleNazwy() {
@@ -450,23 +439,8 @@ namespace bsk___proba_2 {
         }
 
         private static List<string> SelectJednąKolumnę(string kolumna, string tabela) {
-            string query = "SELECT " + kolumna + " FROM " + tabela;
-            List<string> wynik = new List<string>();
-
-            if (CzyZalogowanyAdmin() || CanSelect(tabela)) {
-                if (OtworzPolaczenie()) {
-                    MySqlCommand cmd = new MySqlCommand(query, polaczenie);
-                    MySqlDataReader dataReader = cmd.ExecuteReader();
-
-                    while (dataReader.Read())
-                        wynik.Add(dataReader.GetString(0));
-                    dataReader.Close();
-                    ZamknijPolaczenie();
-                }
-            }
-            else
-                throw new Bledy(KodyBledow.BrakSelect);
-            return wynik;
+            List<List<string>> list = Select(tabela, null, new List<string> {kolumna});
+            return list.Select(list1 => list1[0]).ToList();
         }
 
         public static List<string> ListaPracowników() {
@@ -480,6 +454,7 @@ namespace bsk___proba_2 {
         public static List<string> RoleUżytkownika(string użytkownik) {
             List<string> kluczGlownyRól = KluczGlowny(TabelaZRolami);
             List<string> kluczGłównyPracowników = KluczGlowny(TabelaZPracownikami);
+            //zajebiste zapytanie
             string query =
                 kluczGlownyRól.Aggregate(
                     "SELECT " + NazwaKolumnyRoli + " FROM " + TabelaZRolami + " INNER JOIN (SELECT " +
@@ -499,7 +474,8 @@ namespace bsk___proba_2 {
 
             List<string> listaRól = new List<string>();
             if (OtworzPolaczenie()) {
-                //brak sprawdzania czy można selectować tabelę z rolami
+                //brak sprawdzania czy można selectować tabelę z rolami, każdy powinien mieć prawo do
+                //wglądu jakie role posiada i na co one pozwalają - bez tego nie da się pracować
                 MySqlCommand cmd = new MySqlCommand(query, polaczenie);
                 cmd.Parameters.Add(new MySqlParameter("@login", użytkownik));
                 MySqlDataReader dataReader = cmd.ExecuteReader();
@@ -598,6 +574,26 @@ namespace bsk___proba_2 {
                         .Select((s, i) => new KeyValuePair<string, string>(s, pojedynczePrzypisanie[i])).ToList();
                 Delete(TabelaZPrzypisaniemRól, pairs2);
             }
+        }
+
+        public static bool MożnaUsuwaćRole() {
+            return CanDelete(TabelaZRolami);
+        }
+
+        public static bool MożnaUsuwaćPrzypisania() {
+            return CanDelete(TabelaZPrzypisaniemRól);
+        }
+
+        public static bool MożnaDodawaćPrzypisania() {
+            return CanInsert(TabelaZPrzypisaniemRól);
+        }
+
+        public static bool MożnaDodawaćRole() {
+            return CanInsert(TabelaZRolami);
+        }
+
+        public static bool MożnaEdytowaćRole() {
+            return CanUpdate(TabelaZRolami);
         }
     }
 }

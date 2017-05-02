@@ -12,12 +12,28 @@ namespace bsk___proba_2
     /// </summary>
     public partial class UserPermission : Window {
         private string wybranyUżytkownik;
+        private bool blokujPrzyciskPrzypisywania;
+        private bool blokujEdycjęRoli;
 
         public UserPermission() {
             InitializeComponent();
             foreach (string s in RBACowyConnector.ListaPracowników())
                 ComboBoxUŻytkowników.Items.Add(s);
             PrzeładujWszystkieRole();
+            BlokujPrzyciski();
+        }
+
+        private void BlokujPrzyciski() {
+            if (!RBACowyConnector.MożnaUsuwaćRole() || !RBACowyConnector.MożnaUsuwaćPrzypisania())
+                ButtonUsuwaniaRól.IsEnabled = false;
+            if (!RBACowyConnector.MożnaDodawaćPrzypisania() || !RBACowyConnector.MożnaUsuwaćPrzypisania())
+                blokujPrzyciskPrzypisywania = true;
+            else
+                blokujPrzyciskPrzypisywania = false;
+            if (!RBACowyConnector.MożnaDodawaćRole())
+                ButtonTworzeniaRoli.IsEnabled = false;
+            if (RBACowyConnector.MożnaEdytowaćRole())
+                blokujEdycjęRoli = false;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -48,7 +64,8 @@ namespace bsk___proba_2
 
         private void ComboBoxUŻytkowników_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             wybranyUżytkownik = ComboBoxUŻytkowników.SelectedItem.ToString();
-            ButtonZatwierdzanie.IsEnabled = true;
+            if (blokujPrzyciskPrzypisywania==false)
+                ButtonZatwierdzanie.IsEnabled = true;
             PrzeładujZaznaczoneRole(wybranyUżytkownik);
             ListBoxPrzypisanychRól.Focus();
         }
@@ -83,7 +100,7 @@ namespace bsk___proba_2
             if (ComboBoxEdycjiRól.SelectedItem == null) return;
             List<string> nazwyKolumn = RBACowyConnector.ListaKolumnRól();
             List<string> dane = RBACowyConnector.WierszRól(ComboBoxEdycjiRól.SelectedItem.ToString());
-            StwórzEdytuj win2 = new StwórzEdytuj(nazwyKolumn,dane);
+            StwórzEdytuj win2 = new StwórzEdytuj(nazwyKolumn,dane,blokujEdycjęRoli);
             win2.ShowDialog();
             PrzeładujWszystkieRole();
             PrzeładujZaznaczoneRole(wybranyUżytkownik);
