@@ -476,18 +476,23 @@ namespace bsk___proba_2 {
             query += " WHERE tmp." + NazwaKolumnyLoginow + " = @login";
 
             List<string> listaRól = new List<string>();
-            if (OtworzPolaczenie()) {
-                //brak sprawdzania czy można selectować tabelę z rolami, każdy powinien mieć prawo do
-                //wglądu jakie role posiada i na co one pozwalają - bez tego nie da się pracować
-                MySqlCommand cmd = new MySqlCommand(query, polaczenie);
-                cmd.Parameters.Add(new MySqlParameter("@login", użytkownik));
-                MySqlDataReader dataReader = cmd.ExecuteReader();
+            if (CanSelect(TabelaZRolami) && CanSelect(TabelaZPrzypisaniemRól) && CanSelect(TabelaZPracownikami)) {
+                if (OtworzPolaczenie()) {
+                    //brak sprawdzania czy można selectować tabelę z rolami, każdy powinien mieć prawo do
+                    //wglądu jakie role posiada i na co one pozwalają - bez tego nie da się pracować
+                    MySqlCommand cmd = new MySqlCommand(query, polaczenie);
+                    cmd.Parameters.Add(new MySqlParameter("@login", użytkownik));
+                    MySqlDataReader dataReader = cmd.ExecuteReader();
 
-                while (dataReader.Read())
-                    listaRól.Add(dataReader.GetString(0)); //0 bo zapytanie czyta tylko 1 kolumnę - nazwę
+                    while (dataReader.Read())
+                        listaRól.Add(dataReader.GetString(0)); //0 bo zapytanie czyta tylko 1 kolumnę - nazwę
 
-                dataReader.Close();
-                ZamknijPolaczenie();
+                    dataReader.Close();
+                    ZamknijPolaczenie();
+                }
+            }
+            else {
+                throw new Bledy(KodyBledow.BrakSelect);
             }
             return listaRól;
         }
@@ -568,15 +573,6 @@ namespace bsk___proba_2 {
             List<KeyValuePair<string, string>> pairs = kluczGlowny
                 .Select((t, i) => new KeyValuePair<string, string>(t, idRoli[i])).ToList();
             Delete(TabelaZRolami, pairs);
-
-            List<List<string>> list = Select(TabelaZPrzypisaniemRól, pairs, KluczGlowny(TabelaZPrzypisaniemRól));
-            foreach (List<string> pojedynczePrzypisanie in list) {
-                List<string> nazwyGłownegoPrzypisania = KluczGlowny(TabelaZPrzypisaniemRól);
-                List<KeyValuePair<string, string>> pairs2 =
-                    nazwyGłownegoPrzypisania
-                        .Select((s, i) => new KeyValuePair<string, string>(s, pojedynczePrzypisanie[i])).ToList();
-                Delete(TabelaZPrzypisaniemRól, pairs2);
-            }
         }
 
         public static bool MożnaUsuwaćRole() {

@@ -18,10 +18,15 @@ namespace bsk___proba_2 {
 
         public UserPermission() {
             InitializeComponent();
-            foreach (string s in RBACowyConnector.ListaPracowników())
-                ComboBoxUŻytkowników.Items.Add(s);
-            PrzeładujWszystkieRole();
-            BlokujPrzyciski();
+            try {
+                foreach (string s in RBACowyConnector.ListaPracowników())
+                    ComboBoxUŻytkowników.Items.Add(s);
+                PrzeładujWszystkieRole();
+                BlokujPrzyciski();
+            }
+            catch (RBACowyConnector.Bledy e) {
+                ObsługaBłędów.ObsłużBłąd(e.Kod, e.Wiadomosc);
+            }
         }
 
         private void BlokujPrzyciski() {
@@ -52,22 +57,32 @@ namespace bsk___proba_2 {
         }
 
         private void PrzeładujZaznaczoneRole(string użytkownik) {
-            List<string> roleUżytkownika = RBACowyConnector.RoleUżytkownika(użytkownik);
-            ListBoxPrzypisanychRól.SelectedItems.Clear();
-            blokujPrzyciskPrzypisywania = false;
-            foreach (string s in roleUżytkownika)
-                ListBoxPrzypisanychRól.SelectedItems.Add(s);
-            BlokujZaznaczaniePrzypisań();
+            try {
+                List<string> roleUżytkownika = RBACowyConnector.RoleUżytkownika(użytkownik);
+                ListBoxPrzypisanychRól.SelectedItems.Clear();
+                blokujPrzyciskPrzypisywania = false;
+                foreach (string s in roleUżytkownika)
+                    ListBoxPrzypisanychRól.SelectedItems.Add(s);
+                BlokujZaznaczaniePrzypisań();
+            }
+            catch (RBACowyConnector.Bledy e) {
+                ObsługaBłędów.ObsłużBłąd(e.Kod, e.Wiadomosc);
+            }
         }
 
         private void PrzeładujWszystkieRole() {
             ComboBoxEdycjiRól.Items.Clear();
             ListBoxPrzypisanychRól.Items.Clear();
             ListBoxWszystkichRól.Items.Clear();
-            foreach (string s in RBACowyConnector.ListaWszystkichRól()) {
-                ListBoxWszystkichRól.Items.Add(s);
-                ComboBoxEdycjiRól.Items.Add(s);
-                ListBoxPrzypisanychRól.Items.Add(s);
+            try {
+                foreach (string s in RBACowyConnector.ListaWszystkichRól()) {
+                    ListBoxWszystkichRól.Items.Add(s);
+                    ComboBoxEdycjiRól.Items.Add(s);
+                    ListBoxPrzypisanychRól.Items.Add(s);
+                }
+            }
+            catch (RBACowyConnector.Bledy ex) {
+                ObsługaBłędów.ObsłużBłąd(ex.Kod, ex.Wiadomosc);
             }
         }
 
