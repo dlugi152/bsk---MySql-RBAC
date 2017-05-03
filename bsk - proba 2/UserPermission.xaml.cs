@@ -5,15 +5,16 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using MessageBox = System.Windows.MessageBox;
 
-namespace bsk___proba_2
-{
+namespace bsk___proba_2 {
     /// <summary>
     /// Interaction logic for UserPermission.xaml
     /// </summary>
     public partial class UserPermission : Window {
         private string wybranyUżytkownik;
         private bool blokujPrzyciskPrzypisywania;
+        private bool blokujPrzyciskUsuwania;
         private bool blokujEdycjęRoli;
+        private bool rekurencja; //pomocnicze do blokowania zaznaczania w listach ról kiedy nie ma się praw do edytowania tychże
 
         public UserPermission() {
             InitializeComponent();
@@ -24,20 +25,26 @@ namespace bsk___proba_2
         }
 
         private void BlokujPrzyciski() {
-            if (!RBACowyConnector.MożnaUsuwaćRole() || !RBACowyConnector.MożnaUsuwaćPrzypisania())
+            if (!RBACowyConnector.MożnaUsuwaćRole() || !RBACowyConnector.MożnaUsuwaćPrzypisania()) {
                 ButtonUsuwaniaRól.IsEnabled = false;
+                blokujPrzyciskUsuwania = true;
+            }
+            else
+                blokujPrzyciskUsuwania = false;
+            blokujEdycjęRoli = !RBACowyConnector.MożnaEdytowaćRole();
+            if (!RBACowyConnector.MożnaDodawaćRole())
+                ButtonTworzeniaRoli.IsEnabled = false;
+            BlokujZaznaczaniePrzypisań();
+        }
+
+        private void BlokujZaznaczaniePrzypisań() {
             if (!RBACowyConnector.MożnaDodawaćPrzypisania() || !RBACowyConnector.MożnaUsuwaćPrzypisania())
                 blokujPrzyciskPrzypisywania = true;
             else
                 blokujPrzyciskPrzypisywania = false;
-            if (!RBACowyConnector.MożnaDodawaćRole())
-                ButtonTworzeniaRoli.IsEnabled = false;
-            if (RBACowyConnector.MożnaEdytowaćRole())
-                blokujEdycjęRoli = false;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
+        private void Button_Click(object sender, RoutedEventArgs e) {
             StwórzEdytuj win2 = new StwórzEdytuj();
             win2.ShowDialog();
             PrzeładujWszystkieRole();
@@ -47,8 +54,10 @@ namespace bsk___proba_2
         private void PrzeładujZaznaczoneRole(string użytkownik) {
             List<string> roleUżytkownika = RBACowyConnector.RoleUżytkownika(użytkownik);
             ListBoxPrzypisanychRól.SelectedItems.Clear();
+            blokujPrzyciskPrzypisywania = false;
             foreach (string s in roleUżytkownika)
                 ListBoxPrzypisanychRól.SelectedItems.Add(s);
+            BlokujZaznaczaniePrzypisań();
         }
 
         private void PrzeładujWszystkieRole() {
@@ -64,7 +73,7 @@ namespace bsk___proba_2
 
         private void ComboBoxUŻytkowników_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             wybranyUżytkownik = ComboBoxUŻytkowników.SelectedItem.ToString();
-            if (blokujPrzyciskPrzypisywania==false)
+            if (blokujPrzyciskPrzypisywania == false)
                 ButtonZatwierdzanie.IsEnabled = true;
             PrzeładujZaznaczoneRole(wybranyUżytkownik);
             ListBoxPrzypisanychRól.Focus();
@@ -93,6 +102,7 @@ namespace bsk___proba_2
         }
 
         private void ComboBoxEdycjiRól_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+
             ButtonEdycjiRól.IsEnabled = true;
         }
 
@@ -100,7 +110,7 @@ namespace bsk___proba_2
             if (ComboBoxEdycjiRól.SelectedItem == null) return;
             List<string> nazwyKolumn = RBACowyConnector.ListaKolumnRól();
             List<string> dane = RBACowyConnector.WierszRól(ComboBoxEdycjiRól.SelectedItem.ToString());
-            StwórzEdytuj win2 = new StwórzEdytuj(nazwyKolumn,dane,blokujEdycjęRoli);
+            StwórzEdytuj win2 = new StwórzEdytuj(nazwyKolumn, dane, blokujEdycjęRoli);
             win2.ShowDialog();
             PrzeładujWszystkieRole();
             PrzeładujZaznaczoneRole(wybranyUżytkownik);
@@ -112,6 +122,26 @@ namespace bsk___proba_2
                 RBACowyConnector.UsuńRolę(item);
             PrzeładujWszystkieRole();
             PrzeładujZaznaczoneRole(wybranyUżytkownik);
+        }
+
+        private void ListBoxPrzypisanychRól_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (!blokujPrzyciskPrzypisywania || rekurencja) return;
+            rekurencja = true;
+            foreach (object t in e.AddedItems)
+                ListBoxPrzypisanychRól.SelectedItems.Remove(t);
+            foreach (object t in e.RemovedItems)
+                ListBoxPrzypisanychRól.SelectedItems.Add(t);
+            rekurencja = false;
+        }
+
+        private void ListBoxWszystkichRól_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (!blokujPrzyciskUsuwania || rekurencja) return;
+            rekurencja = true;
+            foreach (object t in e.AddedItems)
+                ListBoxWszystkichRól.SelectedItems.Remove(t);
+            foreach (object t in e.RemovedItems)
+                ListBoxWszystkichRól.SelectedItems.Add(t);
+            rekurencja = false;
         }
     }
 }

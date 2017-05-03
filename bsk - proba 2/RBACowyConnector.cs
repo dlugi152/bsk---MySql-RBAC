@@ -69,7 +69,8 @@ namespace bsk___proba_2 {
         private static bool CzyDostępDlaAdmina(string tabela) {
             //czy automatycznie potwierdzić możliwość dostępu dla admina
             //admin zawsze ma dostęp do tabel nie admińskich
-            return czyAdmin && TabeleAdmińskie.FindIndex(s=> s.Equals(tabela,StringComparison.InvariantCultureIgnoreCase))==-1;
+            return czyAdmin && TabeleAdmińskie.FindIndex(
+                       s => s.Equals(tabela, StringComparison.InvariantCultureIgnoreCase)) == -1;
         }
 
         public static void Inicjalizuj(string serwer, string login, string haslo, string port) {
@@ -267,7 +268,7 @@ namespace bsk___proba_2 {
             zapytanie = kluczGlowny.Aggregate(zapytanie,
                 (current, pair) => current + "(" + pair.Key + " = @" + pair.Key + ") AND ");
             zapytanie = zapytanie.Remove(zapytanie.Length - 5);
-            
+
             if (CanDelete(tabela)) {
                 if (!OtworzPolaczenie()) return;
                 try {
@@ -328,11 +329,13 @@ namespace bsk___proba_2 {
         }
 
         public static List<string> KluczGlowny(string tabela) {
-            return Select("information_schema.columns",
+            var list = Select("information_schema.columns",
                 new List<KeyValuePair<string, string>> {
                     new KeyValuePair<string, string>("TABLE_NAME", tabela),
                     new KeyValuePair<string, string>("COLUMN_KEY", "PRI")
-                }, new List<string> {"COLUMN_NAME"})[0];
+                }, new List<string> {"COLUMN_NAME"});
+            List<string> wynik = list.Select(list1 => list1[0]).ToList();
+            return wynik;
         }
 
         public static List<string> ListaKolumn(string tabela) {
