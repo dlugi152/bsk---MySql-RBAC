@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
 using System.Runtime.InteropServices;
 using MySql.Data.MySqlClient;
@@ -23,7 +24,7 @@ namespace bsk___proba_2 {
         private const string NazwaKolumnyCzyAdmin = "adminska";
         private const string NazwaKolumnyRoli = "nazwa";
         private const string TabelaZPrzypisaniemRól = "przypisanie_roli";
-        private static bool wymuszanieDostępu;
+        private static bool wymuszanieDostępu;//tymczasowe - trzeba to rozwiązać na poziomie samej bazy
 
         private static readonly List<string> TabeleAdmińskie =
             new List<string> {TabelaZRolami, TabelaZPrzypisaniemRól, TabelaZPracownikami};
@@ -86,6 +87,7 @@ namespace bsk___proba_2 {
                 polaczenie = new MySqlConnection(connectionString);
                 WymuszanieWłączone();
                 TestujPolaczenie();
+                OtworzPolaczenie();
                 UstawIdZalogowanego();
                 UstawKluczGłównyRól();
                 WymuszanieWyłączone();
@@ -145,7 +147,7 @@ namespace bsk___proba_2 {
             return true;
         }
 
-        private static bool OtworzPolaczenie() {
+        public static bool OtworzPolaczenie() {
             try {
                 polaczenie.Open();
                 return true;
@@ -162,9 +164,10 @@ namespace bsk___proba_2 {
             }
         }
 
-        private static bool ZamknijPolaczenie() {
+        public static bool ZamknijPolaczenie() {
             try {
                 polaczenie.Close();
+                polaczenie = null;
                 return true;
             }
             catch (MySqlException) {
@@ -204,7 +207,6 @@ namespace bsk___proba_2 {
 
 
             if (CanInsert(tabela)) {
-                if (!OtworzPolaczenie()) return;
                 try {
                     MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
                     foreach (var t in kolAtr)
@@ -213,11 +215,7 @@ namespace bsk___proba_2 {
                     cmd.ExecuteNonQuery();
                 }
                 catch (Exception ex) {
-                    ZamknijPolaczenie();
                     throw new Bledy(KodyBledow.BledneZapytanie, ex.Message);
-                }
-                finally {
-                    ZamknijPolaczenie();
                 }
             }
             else
@@ -241,7 +239,6 @@ namespace bsk___proba_2 {
 
 
             if (CanUpdate(tabela)) {
-                if (!OtworzPolaczenie()) return;
                 try {
                     MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
                     foreach (var t in kolAtr)
@@ -255,9 +252,6 @@ namespace bsk___proba_2 {
                 catch (Exception ex) {
                     throw new Bledy(KodyBledow.BledneZapytanie, ex.Message);
                 }
-                finally {
-                    ZamknijPolaczenie();
-                }
             }
             else
                 throw new Bledy(KodyBledow.BrakUpdate);
@@ -270,7 +264,6 @@ namespace bsk___proba_2 {
             zapytanie = zapytanie.Remove(zapytanie.Length - 5);
 
             if (CanDelete(tabela)) {
-                if (!OtworzPolaczenie()) return;
                 try {
                     MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
                     foreach (var t in kluczGlowny)
@@ -281,9 +274,6 @@ namespace bsk___proba_2 {
                 catch (Exception ex) {
                     throw new Bledy(KodyBledow.BledneZapytanie, ex.Message);
                 }
-                finally {
-                    ZamknijPolaczenie();
-                }
             }
             else
                 throw new Bledy(KodyBledow.BrakDelete);
@@ -293,23 +283,20 @@ namespace bsk___proba_2 {
             string zapytanie = "show tables";
             List<string> list = new List<string>();
 
-            if (OtworzPolaczenie()) {
-                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                MySqlDataReader dataReader = cmd.ExecuteReader();
+            MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+            MySqlDataReader dataReader = cmd.ExecuteReader();
 
-                List<string> listaWszystkich = new List<string>();
-                while (dataReader.Read())
-                    listaWszystkich.Add(dataReader.GetString(0));
-                dataReader.Close();
-                ZamknijPolaczenie();
-                if (admińskie == null)
-                    list.AddRange(listaWszystkich.Where(
-                        nowy => !TabeleAdmińskie.Contains(nowy) &&
-                                (CanSelect(nowy) || CanDelete(nowy) || CanInsert(nowy) || CanUpdate(nowy))));
-                else
-                    list.AddRange(listaWszystkich.Where(s => admińskie.Value && TabeleAdmińskie.Contains(s) ||
-                                                             !admińskie.Value && !TabeleAdmińskie.Contains(s)));
-            }
+            List<string> listaWszystkich = new List<string>();
+            while (dataReader.Read())
+                listaWszystkich.Add(dataReader.GetString(0));
+            dataReader.Close();
+            if (admińskie == null)
+                list.AddRange(listaWszystkich.Where(
+                    nowy => !TabeleAdmińskie.Contains(nowy) &&
+                            (CanSelect(nowy) || CanDelete(nowy) || CanInsert(nowy) || CanUpdate(nowy))));
+            else
+                list.AddRange(listaWszystkich.Where(s => admińskie.Value && TabeleAdmińskie.Contains(s) ||
+                                                         !admińskie.Value && !TabeleAdmińskie.Contains(s)));
             return list;
         }
 
@@ -334,8 +321,7 @@ namespace bsk___proba_2 {
                     new KeyValuePair<string, string>("TABLE_NAME", tabela),
                     new KeyValuePair<string, string>("COLUMN_KEY", "PRI")
                 }, new List<string> {"COLUMN_NAME"});
-            List<string> wynik = list.Select(list1 => list1[0]).ToList();
-            return wynik;
+            return list.Select(list1 => list1[0]).ToList();
         }
 
         public static List<string> ListaKolumn(string tabela) {
@@ -360,34 +346,27 @@ namespace bsk___proba_2 {
             List<List<string>> list = new List<List<string>>();
 
             if (CanSelect(tabela)) {
-                if (OtworzPolaczenie()) {
-                    MySqlCommand cmd = new MySqlCommand(query, polaczenie);
-                    if (where != null && where.Count > 0)
-                        foreach (KeyValuePair<string, string> t in @where)
-                            cmd.Parameters.Add("@" + t.Key, t.Value);
-                    MySqlDataReader dataReader = cmd.ExecuteReader();
+                MySqlCommand cmd = new MySqlCommand(query, polaczenie);
+                if (@where != null && @where.Count > 0)
+                    foreach (KeyValuePair<string, string> t in @where)
+                        cmd.Parameters.Add("@" + t.Key, t.Value);
+                MySqlDataReader dataReader = cmd.ExecuteReader();
 
-                    while (dataReader.Read()) {
-                        List<string> nowaLista = new List<string>();
-                        for (int i = 0; i < dataReader.FieldCount; i++)
-                            nowaLista.Add(dataReader.GetString(i));
-                        list.Add(nowaLista);
-                    }
-                    dataReader.Close();
-                    ZamknijPolaczenie();
+                while (dataReader.Read()) {
+                    List<string> nowaLista = new List<string>();
+                    for (int i = 0; i < dataReader.FieldCount; i++)
+                        nowaLista.Add(dataReader.GetString(i));
+                    list.Add(nowaLista);
                 }
+                dataReader.Close();
             }
             else
                 throw new Bledy(KodyBledow.BrakSelect);
             return list;
         }
 
-        public static List<List<string>> Select(string tabela, List<string> id = null) {
-            List<string> kluczGlowny = KluczGlowny(tabela);
-            if (id == null || id.Count <= 0) return Select(tabela, null, null);
-            List<KeyValuePair<string, string>> pairs = kluczGlowny
-                .Select((s, i) => new KeyValuePair<string, string>(s, id[i])).ToList();
-            return Select(tabela, pairs);
+        public static List<List<string>> Select(string tabela){
+            return Select(tabela, null);
         }
 
         private static string SelectUprawnienia(string table) {
@@ -401,16 +380,13 @@ namespace bsk___proba_2 {
             zapytanie = zapytanie.Remove(zapytanie.Length - 5);
             zapytanie += ")";
             string uprawnienia = "";
-            if (OtworzPolaczenie()) {
-                MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
-                for (var i = 0; i < idUzytejRoli.Count; i++)
-                    cmd.Parameters.Add(new MySqlParameter("@" + KluczGłównyRól[i], idUzytejRoli[i]));
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-                if (dataReader.Read())
-                    uprawnienia = dataReader.GetString(0);
-                dataReader.Close();
-                ZamknijPolaczenie();
-            }
+            MySqlCommand cmd = new MySqlCommand(zapytanie, polaczenie);
+            for (var i = 0; i < idUzytejRoli.Count; i++)
+                cmd.Parameters.Add(new MySqlParameter("@" + KluczGłównyRól[i], idUzytejRoli[i]));
+            MySqlDataReader dataReader = cmd.ExecuteReader();
+            if (dataReader.Read())
+                uprawnienia = dataReader.GetString(0);
+            dataReader.Close();
             return uprawnienia;
         }
 
@@ -477,19 +453,16 @@ namespace bsk___proba_2 {
 
             List<string> listaRól = new List<string>();
             if (CanSelect(TabelaZRolami) && CanSelect(TabelaZPrzypisaniemRól) && CanSelect(TabelaZPracownikami)) {
-                if (OtworzPolaczenie()) {
-                    //brak sprawdzania czy można selectować tabelę z rolami, każdy powinien mieć prawo do
-                    //wglądu jakie role posiada i na co one pozwalają - bez tego nie da się pracować
-                    MySqlCommand cmd = new MySqlCommand(query, polaczenie);
-                    cmd.Parameters.Add(new MySqlParameter("@login", użytkownik));
-                    MySqlDataReader dataReader = cmd.ExecuteReader();
+                //brak sprawdzania czy można selectować tabelę z rolami, każdy powinien mieć prawo do
+                //wglądu jakie role posiada i na co one pozwalają - bez tego nie da się pracować
+                MySqlCommand cmd = new MySqlCommand(query, polaczenie);
+                cmd.Parameters.Add(new MySqlParameter("@login", użytkownik));
+                MySqlDataReader dataReader = cmd.ExecuteReader();
 
-                    while (dataReader.Read())
-                        listaRól.Add(dataReader.GetString(0)); //0 bo zapytanie czyta tylko 1 kolumnę - nazwę
+                while (dataReader.Read())
+                    listaRól.Add(dataReader.GetString(0)); //0 bo zapytanie czyta tylko 1 kolumnę - nazwę
 
-                    dataReader.Close();
-                    ZamknijPolaczenie();
-                }
+                dataReader.Close();
             }
             else {
                 throw new Bledy(KodyBledow.BrakSelect);
@@ -542,7 +515,10 @@ namespace bsk___proba_2 {
 
         public static List<string> WierszRól(string nazwaRoli) {
             List<string> idRoli = IdRoli(nazwaRoli);
-            List<List<string>> list = Select(TabelaZRolami, idRoli);
+            List<string> kluczGlowny = KluczGlowny(TabelaZRolami);
+            List<KeyValuePair<string, string>> pairs = kluczGlowny
+                .Select((s, i) => new KeyValuePair<string, string>(s, idRoli[i])).ToList();
+            List<List<string>> list = Select(TabelaZRolami, pairs);
             return list[0].ToList();
         }
 

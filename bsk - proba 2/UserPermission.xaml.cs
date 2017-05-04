@@ -158,5 +158,9 @@ namespace bsk___proba_2 {
                 ListBoxWszystkichRól.SelectedItems.Add(t);
             rekurencja = false;
         }
+
+        private void Okienko_Closed(object sender, EventArgs e) {
+            RBACowyConnector.ZamknijPolaczenie();
+        }
     }
 }

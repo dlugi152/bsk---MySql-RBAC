@@ -67,5 +67,9 @@ namespace bsk___proba_2
                 }
             }
         }
+
+        private void Window_Closed(object sender, System.EventArgs e) {
+            RBACowyConnector.ZamknijPolaczenie();
+        }
     }
 }
