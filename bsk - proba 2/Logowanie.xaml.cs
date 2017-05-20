@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Input;
 using MySql.Data.MySqlClient;
 
 namespace bsk___proba_2
@@ -16,9 +17,10 @@ namespace bsk___proba_2
 
         private bool wybranoRolę;
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void zaloguj()
         {
-            try {
+            try
+            {
                 RBACowyConnector.Inicjalizuj(AdresTextBox.Text, //ip
                     loginTextBox.Text,
                     hasloTextBox.Password,
@@ -28,31 +30,45 @@ namespace bsk___proba_2
                 Wybór_Roli win2 = new Wybór_Roli(loginTextBox.Text);
                 win2.ShowDialog();
                 wybranoRolę = false;
-                if (win2.DialogResult == true) {
+                if (win2.DialogResult == true)
+                {
                     wybranoRolę = true;
-                    if (RBACowyConnector.CzyZalogowanyAdmin()) {
+                    if (RBACowyConnector.CzyZalogowanyAdmin())
+                    {
                         UserPermission win3 = new UserPermission();
                         win3.Show();
                     }
-                    else {
+                    else
+                    {
                         UserWindow win3 = new UserWindow();
                         win3.Show();
                     }
                     Close();
                 }
-                else {
+                else
                     RBACowyConnector.ZamknijPolaczenie();
-                }
             }
-            catch (RBACowyConnector.Bledy ex) {
+            catch (RBACowyConnector.Bledy ex)
+            {
                 ObsługaBłędów.ObsłużBłąd(ex);
             }
         }
 
-        private void Window_Closed(object sender, EventArgs e) {
-            if (wybranoRolę == false) {
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            zaloguj();
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            if (wybranoRolę == false)
                 RBACowyConnector.ZamknijPolaczenie();
-            }
+        }
+
+        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                zaloguj();
         }
     }
 }
