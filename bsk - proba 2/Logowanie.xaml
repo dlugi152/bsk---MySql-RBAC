@@ -12,6 +12,6 @@
         <Label Content="Adres serwera" HorizontalAlignment="Left" Margin="104,71,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="PortTextBox" HorizontalAlignment="Left" Height="23" Margin="222,113,0,0" TextWrapping="Wrap" Text="15000" VerticalAlignment="Top" Width="120"/>
         <Label Content="Port" HorizontalAlignment="Left" Margin="155,113,0,0" VerticalAlignment="Top"/>
-        <PasswordBox x:Name="hasloTextBox" HorizontalAlignment="Left" Margin="222,200,0,0" VerticalAlignment="Top" Width="120" Password="inny_user"/>
+        <PasswordBox x:Name="hasloTextBox" HorizontalAlignment="Left" Margin="222,200,0,0" VerticalAlignment="Top" Width="120" Password="bombelek"/>
     </Grid>
 </Window>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using MySql.Data.MySqlClient;
@@ -28,6 +29,7 @@ namespace bsk___proba_2
         private const string NazwaKolumnyLoginow = "login_uzytkownika";
         private const string NazwaKolumnyCzyAdmin = "adminska";
         private const string NazwaKolumnyRoli = "nazwa";
+        private const string NazwaKolumnyHasel = "hash_hasla";
         private const string TabelaZPrzypisaniemRól = "przypisanie_roli";
 
         private static readonly List<string> TabeleAdmińskie =
@@ -100,6 +102,7 @@ namespace bsk___proba_2
                 polaczenie = new MySqlConnection(connectionString);
                 TestujPolaczenie();
                 OtworzPolaczenie();
+                SprawdźUżytkownika(login, haslo);
                 PierwszePołączenie(login);
 
             }
@@ -109,7 +112,35 @@ namespace bsk___proba_2
             }
         }
 
-        public static void PierwszePołączenie(string login)
+        private static String sha256_hash(String value)
+        {
+            StringBuilder Sb = new StringBuilder();
+            using (SHA256 hash = SHA256.Create())
+            {
+                Encoding enc = Encoding.UTF8;
+                Byte[] result = hash.ComputeHash(enc.GetBytes(value));
+                foreach (Byte b in result)
+                    Sb.Append(b.ToString("x2"));
+            }
+            return Sb.ToString();
+        }
+
+        private static void SprawdźUżytkownika(string login, string haslo)
+        {
+            string hashHasla = sha256_hash(haslo);
+            List<List<string>> list = Select(TabelaZPracownikami, new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>(NazwaKolumnyLoginow, login),
+                new KeyValuePair<string, string>(NazwaKolumnyHasel, hashHasla)
+            });
+            if (list.Count!=1)
+                throw new Bledy
+                {
+                    Kod = KodyBledow.BlednyLoginHaslo
+                };
+        }
+
+        private static void PierwszePołączenie(string login)
         {
             //PołączenieInicjalne = true;
             KluczGłównyPracowników = KluczGlowny(TabelaZPracownikami);
