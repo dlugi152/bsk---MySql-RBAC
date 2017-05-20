@@ -47,7 +47,7 @@ namespace bsk___proba_2 {
                 dopasujRozmiar();
             }
             catch (RBACowyConnector.Bledy blad) {
-                ObsługaBłędów.ObsłużBłąd(blad.Kod,blad.Wiadomosc);
+                ObsługaBłędów.ObsłużBłąd(blad);
             }
         }
 
@@ -86,7 +86,7 @@ namespace bsk___proba_2 {
                 RBACowyConnector.Insert(tabela, kolWart);
             }
             catch (RBACowyConnector.Bledy blad) {
-                ObsługaBłędów.ObsłużBłąd(blad.Kod, blad.Wiadomosc);
+                ObsługaBłędów.ObsłużBłąd(blad);
             }
             PrzeladujDane(); //najprościej i bezbłędnie
         }
@@ -102,7 +102,7 @@ namespace bsk___proba_2 {
                         RBACowyConnector.Delete(tabela, idKlucza);
                     }
                     catch (RBACowyConnector.Bledy blad) {
-                        ObsługaBłędów.ObsłużBłąd(blad.Kod, blad.Wiadomosc);
+                        ObsługaBłędów.ObsłużBłąd(blad);
                     }
                 }
                 PrzeladujDane();
@@ -154,7 +154,7 @@ namespace bsk___proba_2 {
                 RBACowyConnector.Update(tabela, kolWart, idKlucza);
             }
             catch (RBACowyConnector.Bledy blad) {
-                ObsługaBłędów.ObsłużBłąd(blad.Kod, blad.Wiadomosc);
+                ObsługaBłędów.ObsłużBłąd(blad);
             }
             finally {
                 PrzeladujDane();

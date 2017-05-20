@@ -25,7 +25,7 @@ namespace bsk___proba_2 {
                 BlokujPrzyciski();
             }
             catch (RBACowyConnector.Bledy e) {
-                ObsługaBłędów.ObsłużBłąd(e.Kod, e.Wiadomosc);
+                ObsługaBłędów.ObsłużBłąd(e);
             }
         }
 
@@ -66,7 +66,7 @@ namespace bsk___proba_2 {
                 BlokujZaznaczaniePrzypisań();
             }
             catch (RBACowyConnector.Bledy e) {
-                ObsługaBłędów.ObsłużBłąd(e.Kod, e.Wiadomosc);
+                ObsługaBłędów.ObsłużBłąd(e);
             }
         }
 
@@ -82,7 +82,7 @@ namespace bsk___proba_2 {
                 }
             }
             catch (RBACowyConnector.Bledy ex) {
-                ObsługaBłędów.ObsłużBłąd(ex.Kod, ex.Wiadomosc);
+                ObsługaBłędów.ObsłużBłąd(ex);
             }
         }
 

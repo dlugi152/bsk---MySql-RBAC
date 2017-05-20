@@ -162,7 +162,7 @@ namespace bsk___proba_2
                     }
                 }
                 catch (RBACowyConnector.Bledy ex) {
-                    ObsługaBłędów.ObsłużBłąd(ex.Kod, ex.Wiadomosc);
+                    ObsługaBłędów.ObsłużBłąd(ex);
                 }
             }
             Close();

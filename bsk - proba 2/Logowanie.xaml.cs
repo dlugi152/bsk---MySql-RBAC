@@ -23,27 +23,36 @@ namespace bsk___proba_2
                     loginTextBox.Text,
                     hasloTextBox.Password,
                     PortTextBox.Text);
-                Wybór_Roli win2 = new Wybór_Roli();
+                RBACowyConnector.Inicjalizuj(AdresTextBox.Text, loginTextBox.Text, hasloTextBox.Password,
+                    PortTextBox.Text);
+                Wybór_Roli win2 = new Wybór_Roli(loginTextBox.Text);
                 win2.ShowDialog();
                 wybranoRolę = false;
                 if (win2.DialogResult == true) {
                     wybranoRolę = true;
+                    if (RBACowyConnector.CzyZalogowanyAdmin()) {
+                        UserPermission win3 = new UserPermission();
+                        win3.Show();
+                    }
+                    else {
+                        UserWindow win3 = new UserWindow();
+                        win3.Show();
+                    }
                     Close();
                 }
-                else//todo poprawić to, bo może się scrashować
+                else {
                     RBACowyConnector.ZamknijPolaczenie();
+                }
             }
-            catch (MySqlException ex) {
-                MessageBox.Show(ex.Message + "\n" + ex.Number);
-            }
-            catch (Exception ex) {
-                MessageBox.Show(ex.Message);
+            catch (RBACowyConnector.Bledy ex) {
+                ObsługaBłędów.ObsłużBłąd(ex);
             }
         }
 
         private void Window_Closed(object sender, EventArgs e) {
-            if (wybranoRolę == false) 
+            if (wybranoRolę == false) {
                 RBACowyConnector.ZamknijPolaczenie();
+            }
         }
     }
 }

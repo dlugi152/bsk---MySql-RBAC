@@ -74,6 +74,7 @@
       <DependentUpon>ProstyTextBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="RBACowyConnector.cs" />
+    <Compile Include="Scanner.cs" />
     <Compile Include="Stworz_Edytuj.xaml.cs">
       <DependentUpon>Stworz_Edytuj.xaml</DependentUpon>
     </Compile>

@@ -7,23 +7,15 @@ namespace bsk___proba_2
     /// Logika interakcji dla klasy Wybór_Roli.xaml
     /// </summary>
     public partial class Wybór_Roli : Window {
-        public Wybór_Roli()
+        public Wybór_Roli(string login)
         {
             InitializeComponent();
-            foreach (string s in RBACowyConnector.MojeRoleNazwy())
+            foreach (string s in RBACowyConnector.MojeRoleNazwy(login))
                 ComboBox.Items.Add(s);
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {
             RBACowyConnector.UstawAktualnąRolę(ComboBox.SelectionBoxItem.ToString());
-            if (RBACowyConnector.CzyZalogowanyAdmin()) {
-                UserPermission win2 = new UserPermission();
-                win2.Show();
-            }
-            else {
-                UserWindow win2 = new UserWindow();
-                win2.Show();
-            }
             DialogResult = true;
             Close();
         }

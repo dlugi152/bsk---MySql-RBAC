@@ -63,7 +63,7 @@ namespace bsk___proba_2
                 }
                 catch (RBACowyConnector.Bledy blad)
                 {
-                    MessageBox.Show(blad.Message);
+                    ObsługaBłędów.ObsłużBłąd(blad);
                 }
             }
         }
