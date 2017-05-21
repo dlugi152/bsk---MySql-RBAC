@@ -19,7 +19,7 @@ namespace bsk___proba_2
         private static List<string> idZalogowanegoPracownika;
         private static List<string> idUzytejRoli;
         private static List<string> KluczGłównyRól;
-        private static List<string> KluczGłównyPracowników = null;
+        private static List<string> KluczGłównyPracowników;
         private static Dictionary<string, string> UprawnieniaZalogowanego = new Dictionary<string, string>();
         private static bool czyAdmin;
         private static List<string> tabele = new List<string>();
@@ -29,6 +29,7 @@ namespace bsk___proba_2
         private const string NazwaKolumnyLoginow = "login_uzytkownika";
         private const string NazwaKolumnyCzyAdmin = "adminska";
         private const string NazwaKolumnyRoli = "nazwa";
+        private const string NazwaLicznikaPolaczen = "licznik_polaczen";
         private const string NazwaKolumnyHasel = "hash_hasla";
         private const string TabelaZPrzypisaniemRól = "przypisanie_roli";
 
@@ -37,18 +38,6 @@ namespace bsk___proba_2
 
         private static readonly List<string> TabeleSpecjalne =
             new List<string> {"information_schema.columns", "information_schema"};
-
-        public static Dictionary<string, string> UprawnieniaZalogowanego1
-        {
-            get => UprawnieniaZalogowanego2;
-            set => UprawnieniaZalogowanego2 = value;
-        }
-
-        public static Dictionary<string, string> UprawnieniaZalogowanego2
-        {
-            get => UprawnieniaZalogowanego;
-            set => UprawnieniaZalogowanego = value;
-        }
 
         public enum KodyBledow
         {
@@ -61,7 +50,9 @@ namespace bsk___proba_2
             BrakUpdate,
             NieprawidłoweDane,
             BrakDomyślnej,
-            BrakDanych
+            BrakDanych,
+            TriggerZablokowal,
+            InnaRolaPelniona
         }
 
         public class Bledy : Exception
@@ -142,16 +133,9 @@ namespace bsk___proba_2
 
         private static void PierwszePołączenie(string login)
         {
-            //PołączenieInicjalne = true;
             KluczGłównyPracowników = KluczGlowny(TabelaZPracownikami);
             KluczGłównyRól = KluczGlowny(TabelaZRolami);
             UstawKluczGłównyRól();
-        }
-
-        public static void ZmianaUżytkownika(string login)
-        {
-            UstawIdZalogowanego(login);
-            //PołączenieInicjalne = false;
         }
 
         private static void UstawKluczGłównyRól()
@@ -169,11 +153,6 @@ namespace bsk___proba_2
             return list;
         }
 
-        private static void UstawIdZalogowanego(string login)
-        {
-            idZalogowanegoPracownika = IdPracownika(login);
-        }
-
         private static List<string> IdRoli(string nazwa)
         {
             List<string> selectowane = KluczGlowny(TabelaZRolami);
@@ -186,9 +165,33 @@ namespace bsk___proba_2
             return list;
         }
 
-        public static void UstawAktualnąRolę(string nazwa)
+        public static void UstawAktualnąRolę(string login, string nazwa)
         {
-            idUzytejRoli = IdRoli(nazwa);
+            List<string> tmpIdPracownika = IdPracownika(login);
+            List<string> tmpId = IdRoli(nazwa);
+            var paryUzytejRoli = KluczGłównyRól.Select((t, i) =>
+                    new KeyValuePair<string, string>(t, tmpId[i]))
+                .ToList();
+            var paryKluczaPracownika = tmpIdPracownika.Select((t, i) =>
+                    new KeyValuePair<string, string>(KluczGłównyPracowników[i], t))
+                .ToList();
+
+            List<string> list = Select(TabelaZPracownikami, paryKluczaPracownika,
+                KluczGłównyRól)[0];
+
+            if (list.Any(s => s != "" && !paryUzytejRoli.Exists(pair => pair.Value == s)))
+                throw new Bledy
+                {
+                    Kod = KodyBledow.InnaRolaPelniona,
+                };
+            string iloscAktPolaczen = Select(TabelaZPracownikami, paryKluczaPracownika, new List<string> {NazwaLicznikaPolaczen})[0][0];
+            paryUzytejRoli.Add(new KeyValuePair<string, string>(NazwaLicznikaPolaczen,(int.Parse(iloscAktPolaczen)+1).ToString()));
+            Update(TabelaZPracownikami, paryUzytejRoli, paryKluczaPracownika);
+            //dopiero w tym momencie mogę ustawić te dwie zmienne, bo dopiero od teraz zacznę ich używać
+            //tu się kończy rola admina i po ustawieniu tych zmiennych wszystkie działania będą
+            //kontrolowane, będą sprawdzane uprawnienia roli
+            idUzytejRoli = tmpId;
+            idZalogowanegoPracownika = tmpIdPracownika;
         }
 
         public static bool TestujPolaczenie()
@@ -216,6 +219,29 @@ namespace bsk___proba_2
         {
             try
             {
+                if (idZalogowanegoPracownika != null)
+                {
+                    var paryKluczaPracownika = idZalogowanegoPracownika.Select((t, i) =>
+                            new KeyValuePair<string, string>(KluczGłównyPracowników[i], t))
+                        .ToList();
+                    idZalogowanegoPracownika = null;
+                    idUzytejRoli = null;
+
+                    List<string> list = Select(TabelaZPracownikami, paryKluczaPracownika,
+                        KluczGłównyRól)[0];
+
+                    if (list.Any(s => s != "")) //ktoś zdążył wybrać rolę
+                    {
+                        string iloscAktPolaczen = Select(TabelaZPracownikami, paryKluczaPracownika,
+                            new List<string> {NazwaLicznikaPolaczen})[0][0];
+                        List<KeyValuePair<string, string>> paryUzytejRoli = new List<KeyValuePair<string, string>>();
+                        if (iloscAktPolaczen == "1")
+                            paryUzytejRoli.AddRange(KluczGłównyRól.Select(s => new KeyValuePair<string, string>(s, "")));
+                        paryUzytejRoli.Add(new KeyValuePair<string, string>(NazwaLicznikaPolaczen,
+                            (int.Parse(iloscAktPolaczen) - 1).ToString()));
+                        Update(TabelaZPracownikami, paryUzytejRoli, paryKluczaPracownika);
+                    }
+                }
                 polaczenie.Close();
                 polaczenie.Dispose();
                 return true;
@@ -290,15 +316,20 @@ namespace bsk___proba_2
         private static void ObsłużPrzewidzianeBłędyMySQLa(MySqlException ex)
         {
             Scanner scanner = new Scanner();
+            //brane stąd:
+            //https://dev.mysql.com/doc/refman/5.5/en/error-messages-server.html
+
             string parser1366 = "Incorrect %s value: '%s' for column '%s' at row %ld";
-            string parser1364 = "Field '%s' doesn't have a default value"; //doesn't
+            string parser1364 = "Field '%s' doesn't have a default value";
+            string parser1265 = "Data truncated for column '%s' at row %ld";
             object[] targets;
             switch (ex.Number)
             {
                 case 0:
                     throw new Bledy(KodyBledow.BladLaczenia);
-                case 1045:
-                    throw new Bledy(KodyBledow.BlednyLoginHaslo);
+                //niegdy nie powinno się zdarzyć - podajemy login i hasło de facto na sztywno
+                //case 1045:
+                //    throw new Bledy(KodyBledow.BlednyLoginHaslo);
                 case 1366:
                     targets = scanner.Scan(ex.Message, parser1366);
                     throw new Bledy
@@ -313,6 +344,23 @@ namespace bsk___proba_2
                     throw new Bledy
                     {
                         Kod = KodyBledow.BrakDomyślnej,
+                        Kolumna = targets[0].ToString()
+                    };
+                case 1042:
+                    throw new Bledy
+                    {
+                        Kod = KodyBledow.BladLaczenia
+                    };
+                case 1136:
+                    throw new Bledy
+                    {
+                        Kod = KodyBledow.TriggerZablokowal
+                    };
+                case 1265:
+                    targets = scanner.Scan(ex.Message, parser1265);
+                    throw new Bledy
+                    {
+                        Kod = KodyBledow.NieprawidłoweDane,
                         Kolumna = targets[0].ToString()
                     };
                 default:
@@ -502,13 +550,14 @@ namespace bsk___proba_2
         private static string SelectUprawnienia(string table)
         {
             //selecta w tej funkcji nie wrzucać do selecta ogólnego!!
+            //jeśli idUżytejRoli==null to znaczy, że to admin na początku zagląda do tabel itp
             if (TabeleSpecjalne.FindIndex(s => s.Equals(table, StringComparison.InvariantCultureIgnoreCase)) > -1 ||
                 idUzytejRoli == null &&
                 TabeleAdmińskie.FindIndex(s => s.Equals(table, StringComparison.InvariantCultureIgnoreCase)) > -1)
-                return "s---";
+                return "s-u-";
+            //select potrzebny do wyświetlenia ról użytkownika
+            //update do ustawienia aktualnej pełnionej roli (jedna rola na raz)
             //czy na pewno na to zezwalać?
-            if (UprawnieniaZalogowanego1.Count > 0)
-                return UprawnieniaZalogowanego1[table.ToLower()];
             string zapytanie = "SELECT " + table + " FROM " + TabelaZRolami + " WHERE (";
             zapytanie = KluczGłównyRól.Aggregate(zapytanie, (current, t) => current + t + " = @" + t + " and ");
             zapytanie = zapytanie.Remove(zapytanie.Length - 5);

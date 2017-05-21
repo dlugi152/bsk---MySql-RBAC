@@ -25,8 +25,6 @@ namespace bsk___proba_2
                     loginTextBox.Text,
                     hasloTextBox.Password,
                     PortTextBox.Text);
-                RBACowyConnector.Inicjalizuj(AdresTextBox.Text, loginTextBox.Text, hasloTextBox.Password,
-                    PortTextBox.Text);
                 Wybór_Roli win2 = new Wybór_Roli(loginTextBox.Text);
                 win2.ShowDialog();
                 wybranoRolę = false;

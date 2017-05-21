@@ -17,7 +17,7 @@ namespace bsk___proba_2
                     MessageBox.Show("Błędny login lub hasło");
                     break;
                 case RBACowyConnector.KodyBledow.BladLaczenia:
-                    MessageBox.Show("Błąd podczas łaczenia z bazą");
+                    MessageBox.Show("Błąd podczas łaczenia z bazą\nJesteś pewny, że adres serwera i port są poprawne?");
                     break;
                 case RBACowyConnector.KodyBledow.NieMoznaZamknac:
                     MessageBox.Show("Nie można zamknąć połączenia");
@@ -35,7 +35,11 @@ namespace bsk___proba_2
                     MessageBox.Show("Nie masz praw do edytowania");
                     break;
                 case RBACowyConnector.KodyBledow.NieprawidłoweDane:
-                    MessageBox.Show("Wpisałeś wartość " + ex.Wartosc + " dla kolumny " + ex.Kolumna + ". Ta kolumna wymaga " + ex.Typ);
+                    if (ex.Typ != null && ex.Wartosc != null)//jest pełne info nt. błędu
+                        MessageBox.Show("Wpisałeś wartość " + ex.Wartosc + " dla kolumny " + ex.Kolumna +
+                                        ". Ta kolumna wymaga " + ex.Typ);
+                    else
+                        MessageBox.Show("Nieprawidłowa wartość dla kolumny " + ex.Kolumna);
                     break;
                 case RBACowyConnector.KodyBledow.BrakDomyślnej:
                     MessageBox.Show("Pole " + ex.Kolumna + " nie ma wartości domyślnej");
@@ -43,6 +47,14 @@ namespace bsk___proba_2
                 case RBACowyConnector.KodyBledow.BrakDanych:
                     MessageBox.Show(
                         "Zapytanie miewystarczającą ilość danych. Nie możesz używać samych wartości domyślnych");
+                    break;
+                case RBACowyConnector.KodyBledow.TriggerZablokowal:
+                    MessageBox.Show("Co najmniej jedna wartość była nieprawidłowa\n" +
+                                    "Upewnij się, że np Punkty są dodatnie i inne takie");
+                    break;
+                case RBACowyConnector.KodyBledow.InnaRolaPelniona:
+                    MessageBox.Show("Już pełnisz inną rolę\nWybierz tą samą rolę lub zakończ poprzednie połączenia\n" +
+                                    "jeśli chcesz pełnić nową rolę");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

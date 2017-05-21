@@ -5,7 +5,7 @@
         Title="Logowanie do tunelu ssl" Height="360.448" Width="535.448" Closed="Window_Closed" KeyDown="Window_KeyDown">
     <Grid Margin="0,0,-26,-31">
         <TextBox x:Name="loginTextBox" HorizontalAlignment="Left" Height="23" Margin="222,156,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Text="inny_user"/>
-        <PasswordBox x:Name="hasloTextBox" HorizontalAlignment="Left" Margin="222,200,0,0" VerticalAlignment="Top" Width="120" Password="bombelek"/>
+        <PasswordBox x:Name="hasloTextBox" HorizontalAlignment="Left" Margin="222,200,0,0" VerticalAlignment="Top" Width="120" Password="haslo"/>
         <Button Content="Zaloguj" HorizontalAlignment="Left" Margin="222,250,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
         <Label Content="Login" HorizontalAlignment="Left" Margin="148,156,0,0" VerticalAlignment="Top"/>
         <Label Content="Hasło" HorizontalAlignment="Left" Margin="148,200,0,0" VerticalAlignment="Top"/>
