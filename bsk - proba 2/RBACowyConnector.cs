@@ -795,5 +795,16 @@ namespace bsk___proba_2
         {
             return czyAdmin;
         }
+
+        public static Dictionary<string, string> AktualneUprawnieniaAdminskich()
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            foreach (string s in TabeleAdmińskie)
+            {
+                string uprawnienia = SelectUprawnienia(s);
+                result.Add(s,uprawnienia);
+            }
+            return result;
+        }
     }
 }

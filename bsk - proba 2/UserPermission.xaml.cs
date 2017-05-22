@@ -50,7 +50,8 @@ namespace bsk___proba_2 {
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {
-            StwórzEdytuj win2 = new StwórzEdytuj();
+            Dictionary<string, string> aktualnePrawaDoAdminskich = RBACowyConnector.AktualneUprawnieniaAdminskich();
+            StwórzEdytuj win2 = new StwórzEdytuj(aktualnePrawaDoAdminskich);
             win2.ShowDialog();
             PrzeładujWszystkieRole();
             PrzeładujZaznaczoneRole(wybranyUżytkownik);
@@ -125,7 +126,8 @@ namespace bsk___proba_2 {
             if (ComboBoxEdycjiRól.SelectedItem == null) return;
             List<string> nazwyKolumn = RBACowyConnector.ListaKolumnRól();
             List<string> dane = RBACowyConnector.WierszRól(ComboBoxEdycjiRól.SelectedItem.ToString());
-            StwórzEdytuj win2 = new StwórzEdytuj(nazwyKolumn, dane, blokujEdycjęRoli);
+            Dictionary<string, string> aktualnePrawaDoAdminskich = RBACowyConnector.AktualneUprawnieniaAdminskich();
+            StwórzEdytuj win2 = new StwórzEdytuj(aktualnePrawaDoAdminskich, nazwyKolumn, dane, blokujEdycjęRoli);
             win2.ShowDialog();
             PrzeładujWszystkieRole();
             PrzeładujZaznaczoneRole(wybranyUżytkownik);

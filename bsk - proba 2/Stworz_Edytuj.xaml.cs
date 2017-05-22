@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,15 +14,18 @@ namespace bsk___proba_2
     /// </summary>
     public partial class StwórzEdytuj : Window
     {
+        Dictionary<string, string> MaxUprawnieniaAdmińskie;
         Dictionary<string, string> AktualneUprawnieniaAdmińskie;
         Dictionary<string, string> AktualneUprawnieniaUsera;
         private List<KeyValuePair<string, string>> idEdytowanej;
         private bool blokujEdycję;
         private bool blokujZaznaczanie;
+        private bool calkowiteBlokowanie;
 
-        public StwórzEdytuj()
+        public StwórzEdytuj(Dictionary<string, string> maxUprawnieniaAdmińskie)
         {
             InitializeComponent();
+            MaxUprawnieniaAdmińskie = maxUprawnieniaAdmińskie;
             CheckBoxAdmiński.IsChecked = false;
             ZaladujTabele();
             AktualneUprawnieniaAdmińskie = new Dictionary<string, string>();
@@ -38,9 +42,12 @@ namespace bsk___proba_2
             return a.Equals(b, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        public StwórzEdytuj(List<string> nazwyKolumn, List<string> dane, bool blokujEdycjęRoli)
+        public StwórzEdytuj(Dictionary<string, string> maxUprawnieniaAdmińskie, List<string> nazwyKolumn,
+            List<string> dane, bool blokujEdycjęRoli)
         {
             InitializeComponent();
+            MaxUprawnieniaAdmińskie = maxUprawnieniaAdmińskie;
+            calkowiteBlokowanie = blokujEdycjęRoli;
             AktualneUprawnieniaAdmińskie = new Dictionary<string, string>();
             AktualneUprawnieniaUsera = new Dictionary<string, string>();
 
@@ -67,23 +74,30 @@ namespace bsk___proba_2
             }
             CheckBoxAdmiński.IsChecked = AktualneUprawnieniaAdmińskie.Any(pair => pair.Value != "----");
             ZaladujTabele();
-            if (!blokujEdycjęRoli)
-                blokujEdycję = false;
-            else
-            {
-                PoblokujPrzyciski();
-                blokujEdycję = true;
-            }
+            PoblokujPrzyciski("");
         }
 
-        private void PoblokujPrzyciski()
+        private void PoblokujPrzyciski(string item)
         {
-            CheckBoxAdmiński.IsEnabled = false;
-            CheckBoxEdycji.IsEnabled = false;
-            CheckBoxOdczytu.IsEnabled = false;
-            CheckBoxUsuwania.IsEnabled = false;
-            CheckBoxZapisu.IsEnabled = false;
-            TextBoxNazwy.IsEnabled = false;
+            CheckBoxAdmiński.IsEnabled = !calkowiteBlokowanie;
+            TextBoxNazwy.IsEnabled = !calkowiteBlokowanie;
+            if (item != "")
+            {
+                if (CheckBoxAdmiński.IsChecked == true)
+                {
+                    CheckBoxEdycji.IsEnabled = !calkowiteBlokowanie && MaxUprawnieniaAdmińskie[item].Contains('u');
+                    CheckBoxOdczytu.IsEnabled = !calkowiteBlokowanie && MaxUprawnieniaAdmińskie[item].Contains('s');
+                    CheckBoxUsuwania.IsEnabled = !calkowiteBlokowanie && MaxUprawnieniaAdmińskie[item].Contains('d');
+                    CheckBoxZapisu.IsEnabled = !calkowiteBlokowanie && MaxUprawnieniaAdmińskie[item].Contains('i');
+                }
+            }
+            else
+            {
+                CheckBoxEdycji.IsEnabled = true;
+                CheckBoxOdczytu.IsEnabled = true;
+                CheckBoxUsuwania.IsEnabled = true;
+                CheckBoxZapisu.IsEnabled = true;
+            }
         }
 
         private void ZaladujTabele()
@@ -113,6 +127,7 @@ namespace bsk___proba_2
         private void ComboBoxTabel_SelectionChanged(object sender,
             System.Windows.Controls.SelectionChangedEventArgs e)
         {
+            PoblokujPrzyciski(e.AddedItems.Count == 1 ? e.AddedItems[0] as string : "");
             blokujZaznaczanie = true;
             if (ComboBoxTabel.SelectedItem == null) return;
             if (CheckBoxAdmiński.IsChecked != true)
@@ -187,7 +202,7 @@ namespace bsk___proba_2
 
         private void CheckBoxZapisu_Check(object sender, RoutedEventArgs e)
         {
-           ZaktualizujUprawnienie(ComboBoxTabel.SelectedItem, 'i');
+            ZaktualizujUprawnienie(ComboBoxTabel.SelectedItem, 'i');
         }
 
         private void CheckBoxOdczytu_Check(object sender, RoutedEventArgs e)
