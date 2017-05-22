@@ -23,16 +23,16 @@ namespace bsk___proba_2
                     MessageBox.Show("Nie można zamknąć połączenia");
                     break;
                 case RBACowyConnector.KodyBledow.BrakInsert:
-                    MessageBox.Show("Nie masz praw do insertowania");
+                    MessageBox.Show("Nie masz praw do insertowania tabeli " + ex.Tabela);
                     break;
                 case RBACowyConnector.KodyBledow.BrakSelect:
-                    MessageBox.Show("Nie masz praw do selectowania");
+                    MessageBox.Show("Nie masz praw do selectowania tabeli "+ex.Tabela);
                     break;
                 case RBACowyConnector.KodyBledow.BrakDelete:
-                    MessageBox.Show("Nie masz praw do deletowania");
+                    MessageBox.Show("Nie masz praw do deletowania tabeli " + ex.Tabela);
                     break;
                 case RBACowyConnector.KodyBledow.BrakUpdate:
-                    MessageBox.Show("Nie masz praw do edytowania");
+                    MessageBox.Show("Nie masz praw do edytowania tabeli " + ex.Tabela);
                     break;
                 case RBACowyConnector.KodyBledow.NieprawidłoweDane:
                     if (ex.Typ != null && ex.Wartosc != null)//jest pełne info nt. błędu
@@ -50,11 +50,15 @@ namespace bsk___proba_2
                     break;
                 case RBACowyConnector.KodyBledow.TriggerZablokowal:
                     MessageBox.Show("Co najmniej jedna wartość była nieprawidłowa\n" +
-                                    "Upewnij się, że np Punkty są dodatnie i inne takie");
+                                    "Dane były niespójne\n" +
+                                    "Upewnij się, że np Punkty są dodatnie, data po>data przed i inne takie");
                     break;
                 case RBACowyConnector.KodyBledow.InnaRolaPelniona:
                     MessageBox.Show("Już pełnisz inną rolę\nWybierz tą samą rolę lub zakończ poprzednie połączenia\n" +
                                     "jeśli chcesz pełnić nową rolę");
+                    break;
+                case RBACowyConnector.KodyBledow.MozeDaty:
+                    MessageBox.Show("Twoje dane nie były spójne. Może daty odwrotnie niż trzeba?");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

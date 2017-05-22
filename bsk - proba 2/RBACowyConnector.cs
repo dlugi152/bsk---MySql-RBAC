@@ -52,7 +52,8 @@ namespace bsk___proba_2
             BrakDomyślnej,
             BrakDanych,
             TriggerZablokowal,
-            InnaRolaPelniona
+            InnaRolaPelniona,
+            MozeDaty
         }
 
         public class Bledy : Exception
@@ -62,6 +63,7 @@ namespace bsk___proba_2
             public string Kolumna;
             public string Typ;
             public string Wartosc;
+            public string Tabela;
 
             public Bledy(KodyBledow kod)
             {
@@ -310,7 +312,11 @@ namespace bsk___proba_2
                 }
             }
             else
-                throw new Bledy(KodyBledow.BrakInsert);
+                throw new Bledy
+                {
+                    Kod = KodyBledow.BrakInsert,
+                    Tabela = tabela
+                };
         }
 
         private static void ObsłużPrzewidzianeBłędyMySQLa(MySqlException ex)
@@ -322,6 +328,7 @@ namespace bsk___proba_2
             string parser1366 = "Incorrect %s value: '%s' for column '%s' at row %ld";
             string parser1364 = "Field '%s' doesn't have a default value";
             string parser1265 = "Data truncated for column '%s' at row %ld";
+            string parser1054 = "Unknown column '%s' in '%s'";
             object[] targets;
             switch (ex.Number)
             {
@@ -362,6 +369,12 @@ namespace bsk___proba_2
                     {
                         Kod = KodyBledow.NieprawidłoweDane,
                         Kolumna = targets[0].ToString()
+                    };
+                case 1054:
+                    targets = scanner.Scan(ex.Message, parser1054);
+                    throw new Bledy
+                    {
+                        Kod = KodyBledow.MozeDaty
                     };
                 default:
                     throw new Exception("Nieoczekiwany błąd o kodzie " + ex.Number);
@@ -404,7 +417,11 @@ namespace bsk___proba_2
                 }
             }
             else
-                throw new Bledy(KodyBledow.BrakUpdate);
+                throw new Bledy
+                {
+                    Kod = KodyBledow.BrakUpdate,
+                    Tabela = tabela
+                };
         }
 
         public static void Delete(string tabela, List<KeyValuePair<string, string>> kluczGlowny)
@@ -430,7 +447,11 @@ namespace bsk___proba_2
                 }
             }
             else
-                throw new Bledy(KodyBledow.BrakDelete);
+                throw new Bledy
+                {
+                    Kod = KodyBledow.BrakDelete,
+                    Tabela = tabela
+                };
         }
 
         public static List<string> ListaTabel(bool? admińskie)
@@ -538,7 +559,11 @@ namespace bsk___proba_2
                 dataReader.Close();
             }
             else
-                throw new Bledy(KodyBledow.BrakSelect);
+                throw new Bledy
+                {
+                    Kod = KodyBledow.BrakSelect,
+                    Tabela = tabela
+                };
             return list;
         }
 

@@ -8,11 +8,11 @@
         <Button Content="Zatwierdź" HorizontalAlignment="Left" Margin="162,249,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
         <Label Content="Wybierz obiekt" HorizontalAlignment="Left" Margin="95,59,0,0" VerticalAlignment="Top"/>
         <ComboBox Name="ComboBoxTabel" HorizontalAlignment="Left" Margin="78,90,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="ComboBoxTabel_SelectionChanged"/>
-        <CheckBox Name="CheckBoxZapisu" Content="Zapis" HorizontalAlignment="Left" Margin="45,149,0,0" VerticalAlignment="Top" Click="CheckBoxZapisu_Click"/>
-        <CheckBox Name="CheckBoxOdczytu" Content="Odczyt" HorizontalAlignment="Left" Margin="162,149,0,0" VerticalAlignment="Top" Click="CheckBoxOdczytu_Click"/>
-        <CheckBox Name="CheckBoxEdycji" Content="Edycja" HorizontalAlignment="Left" Margin="45,192,0,0" VerticalAlignment="Top" Click="CheckBoxEdycji_Click"/>
-        <CheckBox Name="CheckBoxUsuwania" Content="Usuwanie" HorizontalAlignment="Left" Margin="162,192,0,0" VerticalAlignment="Top" Click="CheckBoxUsuwania_Click"/>
-        <CheckBox Name="CheckBoxAdmiński" Content="Admińska" HorizontalAlignment="Left" Margin="45,252,0,0" VerticalAlignment="Top" Click="CheckBoxAdmiński_Click"/>
+        <CheckBox Name="CheckBoxZapisu" Content="Zapis" HorizontalAlignment="Left" Margin="45,149,0,0" VerticalAlignment="Top" Checked="CheckBoxZapisu_Check" Unchecked="CheckBoxZapisu_Check"/>
+        <CheckBox Name="CheckBoxOdczytu" Content="Odczyt" HorizontalAlignment="Left" Margin="162,149,0,0" VerticalAlignment="Top" Checked="CheckBoxOdczytu_Check" Unchecked="CheckBoxOdczytu_Check"/>
+        <CheckBox Name="CheckBoxEdycji" Content="Edycja" HorizontalAlignment="Left" Margin="45,192,0,0" VerticalAlignment="Top" Checked="CheckBoxEdycji_Check" Unchecked="CheckBoxEdycji_Check"/>
+        <CheckBox Name="CheckBoxUsuwania" Content="Usuwanie" HorizontalAlignment="Left" Margin="162,192,0,0" VerticalAlignment="Top" Checked="CheckBoxUsuwania_Check" Unchecked="CheckBoxUsuwania_Check"/>
+        <CheckBox Name="CheckBoxAdmiński" Content="Admińska" HorizontalAlignment="Left" Margin="45,252,0,0" VerticalAlignment="Top" Checked="CheckBoxAdmiński_Check" Unchecked="CheckBoxAdmiński_Check"/>
 
     </Grid>
 </Window>

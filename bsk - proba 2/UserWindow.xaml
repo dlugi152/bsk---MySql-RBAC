@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="UserWindow" Height="257.062" Width="343.667" Closed="Window_Closed">
     <Grid Margin="0,0,0,0">
-        <ListBox x:Name="Tabele" HorizontalAlignment="Left" Height="175" Margin="20,38,0,0" VerticalAlignment="Top" Width="109" MouseDoubleClick="Tabele_MouseDoubleClick"/>
-        <Button Content="Wyswietl tabelę" HorizontalAlignment="Left" Margin="175,35,0,0" VerticalAlignment="Top" Width="92" Click="Button_Click"/>
-        <Button Content="Dodaj wiersz" HorizontalAlignment="Left" Margin="175,156,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_1"/>
+        <ListBox x:Name="Tabele" HorizontalAlignment="Left" Height="175" Margin="20,38,0,0" VerticalAlignment="Top" Width="109" MouseDoubleClick="Tabele_MouseDoubleClick" SelectionChanged="Tabele_SelectionChanged"/>
+        <Button Name="ButtonWyświetl" Content="Wyswietl tabelę" HorizontalAlignment="Left" Margin="175,35,0,0" VerticalAlignment="Top" Width="92" Click="Button_Click"/>
+        <Button Name="ButtonDodaj" Content="Dodaj wiersz" HorizontalAlignment="Left" Margin="175,156,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_1"/>
         <Label Content="Dostępne tabele" HorizontalAlignment="Left" Margin="20,10,0,0" VerticalAlignment="Top"/>
 
     </Grid>

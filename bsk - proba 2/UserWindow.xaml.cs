@@ -23,21 +23,21 @@ namespace bsk___proba_2
             if (Tabele.SelectedItems.Count == 0)
                 MessageBox.Show("Musisz wybrać jakąś tabelę");
             else
-            {
-                OknoTabeli win2 = new OknoTabeli();
-                win2.OtworzTabele(Tabele.SelectedItems[0].ToString());
-                win2.Show();
-            }
+                OtwórzTabelę(Tabele.SelectedItems[0].ToString());
         }
 
         private void Tabele_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (Tabele.SelectedItems.Count == 1)
-            {
-                OknoTabeli win2 = new OknoTabeli();
-                win2.OtworzTabele(Tabele.SelectedItems[0].ToString());
+                OtwórzTabelę(Tabele.SelectedItems[0].ToString());
+        }
+
+        private void OtwórzTabelę(string tabela)
+        {
+            OknoTabeli win2 = new OknoTabeli();
+            win2.OtworzTabele(Tabele.SelectedItems[0].ToString());
+            if (RBACowyConnector.CanSelect(Tabele.SelectedItems[0].ToString()))
                 win2.Show();
-            }
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
@@ -70,6 +70,20 @@ namespace bsk___proba_2
 
         private void Window_Closed(object sender, System.EventArgs e) {
             RBACowyConnector.ZamknijPolaczenie();
+        }
+
+        private void Tabele_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (Tabele.SelectedItems.Count == 1)
+            {
+                ButtonWyświetl.IsEnabled = RBACowyConnector.CanSelect(Tabele.SelectedItems[0].ToString());
+                ButtonDodaj.IsEnabled = RBACowyConnector.CanInsert(Tabele.SelectedItems[0].ToString());
+            }
+            else
+            {
+                ButtonDodaj.IsEnabled = false;
+                ButtonWyświetl.IsEnabled = false;
+            }
         }
     }
 }
