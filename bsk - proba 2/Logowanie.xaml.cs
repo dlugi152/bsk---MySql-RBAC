@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
 using MySql.Data.MySqlClient;
@@ -25,6 +26,40 @@ namespace bsk___proba_2
                     loginTextBox.Text,
                     hasloTextBox.Password,
                     PortTextBox.Text);
+                if (RBACowyConnector.PierwszeLogowanie())
+                {
+                    while (true)
+                    {
+                        string stareHaslo, noweHaslo;
+                        var w = new ProstyTextBox("Podaj stare hasło\n\n\n\n\n\n\n\n\nZamknij to okno, żeby \nzrezygnować ze zmiany\n" +
+                                                  "i się wylogować");
+                        if (w.ShowDialog() == true)
+                            stareHaslo = w.TextDoPrzekazania;
+                        else
+                            return;
+                        if (stareHaslo != hasloTextBox.Password)
+                        {
+                            MessageBox.Show("Użytkownik podał złe hasło. Spróbuj ponownie");
+                            continue;
+                        }
+                        var w2 = new ProstyTextBox("Podaj nowe hasło");
+                        if (w2.ShowDialog() == true)
+                            noweHaslo = w2.TextDoPrzekazania;
+                        else
+                        {
+                            MessageBox.Show("Użytkownik nie podał nowego hasła. Spróbuj ponownie");
+                            continue;
+                        }
+                        var w3 = new ProstyTextBox("Powtórz nowe hasło");
+                        if (w3.ShowDialog() != true || noweHaslo != w3.TextDoPrzekazania)
+                        {
+                            MessageBox.Show("Użytkownik nie powtórzył hasła. Spróbuj ponownie");
+                            continue;
+                        }
+                        RBACowyConnector.AktualizujHasło(loginTextBox.Text, noweHaslo);
+                        break;
+                    }
+                }
                 Wybór_Roli win2 = new Wybór_Roli(loginTextBox.Text);
                 win2.ShowDialog();
                 wybranoRolę = false;

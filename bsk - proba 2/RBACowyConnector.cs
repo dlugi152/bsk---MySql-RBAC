@@ -241,7 +241,7 @@ namespace bsk___proba_2
                     List<List<string>> listtmp = Select(TabelaZPracownikami, paryKluczaPracownika,
                         KluczGłównyRól);
 
-                    if (listtmp.Capacity==1 && listtmp[0].Any(s => s != "")) //ktoś zdążył wybrać rolę
+                    if (listtmp.Count==1 && listtmp[0].Any(s => s != "")) //ktoś zdążył wybrać rolę
                     {
                         string iloscAktPolaczen = Select(TabelaZPracownikami, paryKluczaPracownika,
                             new List<string> {NazwaLicznikaPolaczen})[0][0];
@@ -859,6 +859,7 @@ namespace bsk___proba_2
 
         public static void DodajUżytkownika(List<KeyValuePair<string, string>> kolWart)
         {
+            kolWart.Add(new KeyValuePair<string, string>(NazwaKolumnyWymuszaniaHasla,"1"));
             int index = kolWart.FindIndex(
                 pair => pair.Key.Equals(NazwaKolumnyHasel, StringComparison.CurrentCultureIgnoreCase));
             string haslo = kolWart[index].Value;
@@ -897,6 +898,27 @@ namespace bsk___proba_2
         public static bool CzyKolumnaZHasłem(string kolumna)
         {
             return NazwaKolumnyHasel.Equals(kolumna, StringComparison.CurrentCultureIgnoreCase);
+        }
+
+        public static void AktualizujHasło(string login, string noweHaslo)
+        {
+            Update(TabelaZPracownikami,new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>(NazwaKolumnyHasel,sha256_hash(noweHaslo)),
+                new KeyValuePair<string, string>(NazwaKolumnyWymuszaniaHasla,"0")
+            }, new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>(NazwaKolumnyLoginow,login)
+            });
+        }
+
+        public static bool PierwszeLogowanie()
+        {
+            List<List<string>> list = Select(TabelaZPracownikami, new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>(NazwaKolumnyLoginow, login)
+            }, new List<string> {NazwaKolumnyWymuszaniaHasla});
+            return bool.Parse(list[0][0]);
         }
     }
 }

@@ -291,7 +291,7 @@ namespace bsk___proba_2
                     else
                     {
                         Random rnd = new Random();
-                        for (int i = 0; i < 10; i++)
+                        for (int i = 0; i < 3; i++)
                             sb.Append((char)rnd.Next('A', 'Z'));
                         kolWart.Add(new KeyValuePair<string, string>(kolumna,sb.ToString()));
                     }
@@ -300,6 +300,7 @@ namespace bsk___proba_2
             try
             {
                 RBACowyConnector.DodajUżytkownika(kolWart);
+                MessageBox.Show("jednorazowe hasło: " + sb);
             }
             catch (RBACowyConnector.Bledy blad)
             {
