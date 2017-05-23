@@ -55,6 +55,7 @@ namespace bsk___proba_2
                         var w = new ProstyTextBox(kolumna); //a to niewygodne
                         if (w.ShowDialog() == true)
                             kolWart.Add(new KeyValuePair<string, string>(kolumna, w.TextDoPrzekazania));
+                        else return;
                     }
                 }
                 try

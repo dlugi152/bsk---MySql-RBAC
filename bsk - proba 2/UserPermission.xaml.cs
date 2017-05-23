@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms;
-using MessageBox = System.Windows.MessageBox;
 
 namespace bsk___proba_2
 {
@@ -277,14 +276,25 @@ namespace bsk___proba_2
             List<string> kluczGlowny = RBACowyConnector.GetKluczGłównyPracowników();
             List<KeyValuePair<string, string>> kolWart = new List<KeyValuePair<string, string>>();
             List<string> listaPólTworzeniaUsera = RBACowyConnector.FormularzPracownika();
+            StringBuilder sb = new StringBuilder();
             foreach (string kolumna in listaPólTworzeniaUsera)
             {
                 if (!kluczGlowny.Contains(kolumna))
                 {
-                    var w = new ProstyTextBox(kolumna); //a to niewygodne
-                    if (w.ShowDialog() == true)
-                        kolWart.Add(new KeyValuePair<string, string>(kolumna, w.TextDoPrzekazania));
-                    else return;
+                    if (!RBACowyConnector.CzyKolumnaZHasłem(kolumna))
+                    {
+                        var w = new ProstyTextBox(kolumna); //a to niewygodne
+                        if (w.ShowDialog() == true)
+                            kolWart.Add(new KeyValuePair<string, string>(kolumna, w.TextDoPrzekazania));
+                        else return;
+                    }
+                    else
+                    {
+                        Random rnd = new Random();
+                        for (int i = 0; i < 10; i++)
+                            sb.Append((char)rnd.Next('A', 'Z'));
+                        kolWart.Add(new KeyValuePair<string, string>(kolumna,sb.ToString()));
+                    }
                 }
             }
             try
@@ -311,6 +321,7 @@ namespace bsk___proba_2
                     var w = new ProstyTextBox(pair.Key,pair.Value); //a to niewygodne
                     if (w.ShowDialog() == true)
                         kolWart.Add(new KeyValuePair<string, string>(pair.Key, w.TextDoPrzekazania));
+                    else return;
                 }
                 else
                     idKlucza.Add(new KeyValuePair<string, string>(pair.Key, pair.Value));

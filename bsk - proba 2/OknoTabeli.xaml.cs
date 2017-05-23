@@ -13,6 +13,7 @@ namespace bsk___proba_2 {
     public partial class OknoTabeli : Window {
         private List<string> kluczGlowny;
         private string tabela;
+        private bool anulowanaEdycja = false;
 
         public OknoTabeli() {
             InitializeComponent();
@@ -80,6 +81,8 @@ namespace bsk___proba_2 {
                     var w = new ProstyTextBox(klucz); //a to niewygodne
                     if (w.ShowDialog() == true)
                         kolWart.Add(new KeyValuePair<string, string>(klucz, w.TextDoPrzekazania));
+                    else
+                        return;
                 }
             }
             try {
@@ -124,6 +127,11 @@ namespace bsk___proba_2 {
                         TabelaDataGrid_BeginningEdit(null,
                             new DataGridBeginningEditEventArgs(TabelaDataGrid.Columns[0], new DataGridRow {Item = t},
                                 null)); //ważne, że działa
+                        if (anulowanaEdycja)
+                        {
+                            anulowanaEdycja = false;
+                            return;
+                        }
                     }
                     //nie trzeba przeładowywać
                     break;
@@ -148,6 +156,12 @@ namespace bsk___proba_2 {
                     wiersz[nazwaKolumny] = w.TextDoPrzekazania;
                     kolWart.Add(new KeyValuePair<string, string>(nazwaKolumny, w.TextDoPrzekazania));
                     e.Row.Item = wiersz;
+                }
+                else
+                {
+                    anulowanaEdycja = true;
+                    e.Cancel = true;
+                    return;
                 }
             }
             try {

@@ -30,6 +30,7 @@ namespace bsk___proba_2
         private const string NazwaKolumnyCzyAdmin = "adminska";
         private const string NazwaKolumnyRoli = "nazwa";
         private const string NazwaLicznikaPolaczen = "licznik_polaczen";
+        private const string NazwaKolumnyWymuszaniaHasla = "Zmiana_Hasla";
         private const string NazwaKolumnyHasel = "hash_hasla";
         private const string TabelaZPrzypisaniemRól = "przypisanie_roli";
         private static readonly List<string> ListaObowiązkowychPólUsera = new List<string>
@@ -145,7 +146,7 @@ namespace bsk___proba_2
             UstawKluczGłównyRól();
 
             ListaPólUseraNiePytać = new List<string>().Concat(KluczGłównyRól)
-                .Concat(new List<string> { NazwaLicznikaPolaczen }).ToList();
+                .Concat(new List<string> { NazwaLicznikaPolaczen, NazwaKolumnyWymuszaniaHasla }).ToList();
         }
 
         private static void UstawKluczGłównyRól()
@@ -891,6 +892,11 @@ namespace bsk___proba_2
         public static void EdytujUżytkownika(List<KeyValuePair<string, string>> kolWart, List<KeyValuePair<string, string>> idKlucza)
         {
             Update(TabelaZPracownikami,kolWart,idKlucza);
+        }
+
+        public static bool CzyKolumnaZHasłem(string kolumna)
+        {
+            return NazwaKolumnyHasel.Equals(kolumna, StringComparison.CurrentCultureIgnoreCase);
         }
     }
 }
