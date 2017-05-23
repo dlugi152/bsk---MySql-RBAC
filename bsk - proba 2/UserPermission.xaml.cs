@@ -22,6 +22,7 @@ namespace bsk___proba_2
             ; //pomocnicze do blokowania zaznaczania w listach ról kiedy nie ma się praw do edytowania tychże
 
         private bool blokujPrzyciskUsuwaniaUsera;
+        private bool blokujPrzeciskEdytowaniaUsera;
 
         public UserPermission()
         {
@@ -52,6 +53,8 @@ namespace bsk___proba_2
             blokujEdycjęRoli = !RBACowyConnector.MożnaEdytowaćRole();
             if (!RBACowyConnector.MożnaDodawaćRole())
                 ButtonTworzeniaRoli.IsEnabled = false;
+            if (!RBACowyConnector.MożnaDodawaćUżytkownika())
+                ButtonDodawaniaUsera.IsEnabled = false;
             BlokujZaznaczaniePrzypisań();
             BlokujUsuwanieUserów();
         }
@@ -59,6 +62,11 @@ namespace bsk___proba_2
         private void BlokujUsuwanieUserów()
         {
             blokujPrzyciskUsuwaniaUsera = !RBACowyConnector.MożnaUsuwaćUserów();
+        }
+
+        private void BlokujEdytowanieUserów()
+        {
+            blokujPrzeciskEdytowaniaUsera = !RBACowyConnector.MożnaEdytowaćUserów();
         }
 
         private void BlokujZaznaczaniePrzypisań()
@@ -85,6 +93,7 @@ namespace bsk___proba_2
                 List<string> roleUżytkownika = RBACowyConnector.RoleUżytkownika(użytkownik);
                 ListBoxPrzypisanychRól.SelectedItems.Clear();
                 blokujPrzyciskUsuwaniaUsera = false;
+                blokujPrzeciskEdytowaniaUsera = false;
                 blokujPrzyciskPrzypisywania = false;
                 foreach (string s in roleUżytkownika)
                     ListBoxPrzypisanychRól.SelectedItems.Add(s);
@@ -126,6 +135,8 @@ namespace bsk___proba_2
                     ButtonZatwierdzanie.IsEnabled = true;
                 if (blokujPrzyciskUsuwaniaUsera == false)
                     ButtonUsuwaniaUsera.IsEnabled = true;
+                if (blokujPrzeciskEdytowaniaUsera == false)
+                    ButtonEdytowaniaUsera.IsEnabled = true;
                 PrzeładujZaznaczoneRole(wybranyUżytkownik);
                 ListBoxPrzypisanychRól.Focus();
             }
@@ -258,6 +269,59 @@ namespace bsk___proba_2
             catch (RBACowyConnector.Bledy e)
             {
                 ObsługaBłędów.ObsłużBłąd(e);
+            }
+        }
+
+        private void ButtonDodawaniaUsera_Click(object sender, RoutedEventArgs e)
+        {
+            List<string> kluczGlowny = RBACowyConnector.GetKluczGłównyPracowników();
+            List<KeyValuePair<string, string>> kolWart = new List<KeyValuePair<string, string>>();
+            List<string> listaPólTworzeniaUsera = RBACowyConnector.FormularzPracownika();
+            foreach (string kolumna in listaPólTworzeniaUsera)
+            {
+                if (!kluczGlowny.Contains(kolumna))
+                {
+                    var w = new ProstyTextBox(kolumna); //a to niewygodne
+                    if (w.ShowDialog() == true)
+                        kolWart.Add(new KeyValuePair<string, string>(kolumna, w.TextDoPrzekazania));
+                    else return;
+                }
+            }
+            try
+            {
+                RBACowyConnector.DodajUżytkownika(kolWart);
+            }
+            catch (RBACowyConnector.Bledy blad)
+            {
+                ObsługaBłędów.ObsłużBłąd(blad);
+            }
+        }
+
+        private void ButtonEdytowaniaUsera_Click(object sender, RoutedEventArgs e)
+        {
+            List<string> kluczGlowny = RBACowyConnector.GetKluczGłównyPracowników();
+            List<KeyValuePair<string, string>> kolWart = new List<KeyValuePair<string, string>>();
+            List<KeyValuePair<string, string>> idKlucza = new List<KeyValuePair<string, string>>();
+            List<KeyValuePair<string, string>> edytowanyUser =
+                RBACowyConnector.EdytowanyUżytkownik(ComboBoxUŻytkowników.SelectedItem.ToString());
+            foreach (KeyValuePair<string, string> pair in edytowanyUser)
+            {
+                if (!kluczGlowny.Contains(pair.Key))
+                {
+                    var w = new ProstyTextBox(pair.Key,pair.Value); //a to niewygodne
+                    if (w.ShowDialog() == true)
+                        kolWart.Add(new KeyValuePair<string, string>(pair.Key, w.TextDoPrzekazania));
+                }
+                else
+                    idKlucza.Add(new KeyValuePair<string, string>(pair.Key, pair.Value));
+            }
+            try
+            {
+                RBACowyConnector.EdytujUżytkownika(kolWart, idKlucza);
+            }
+            catch (RBACowyConnector.Bledy blad)
+            {
+                ObsługaBłędów.ObsłużBłąd(blad);
             }
         }
     }

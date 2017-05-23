@@ -32,6 +32,12 @@ namespace bsk___proba_2
         private const string NazwaLicznikaPolaczen = "licznik_polaczen";
         private const string NazwaKolumnyHasel = "hash_hasla";
         private const string TabelaZPrzypisaniemRól = "przypisanie_roli";
+        private static readonly List<string> ListaObowiązkowychPólUsera = new List<string>
+        {
+            NazwaKolumnyLoginow,NazwaKolumnyHasel
+        };
+
+        private static List<string> ListaPólUseraNiePytać;
 
         private static readonly List<string> TabeleAdmińskie =
             new List<string> {TabelaZRolami, TabelaZPrzypisaniemRól, TabelaZPracownikami};
@@ -78,7 +84,6 @@ namespace bsk___proba_2
 
         static RBACowyConnector()
         {
-
         }
 
         public static void Inicjalizuj(string serwer, string login, string haslo, string port)
@@ -138,6 +143,9 @@ namespace bsk___proba_2
             KluczGłównyPracowników = KluczGlowny(TabelaZPracownikami);
             KluczGłównyRól = KluczGlowny(TabelaZRolami);
             UstawKluczGłównyRól();
+
+            ListaPólUseraNiePytać = new List<string>().Concat(KluczGłównyRól)
+                .Concat(new List<string> { NazwaLicznikaPolaczen }).ToList();
         }
 
         private static void UstawKluczGłównyRól()
@@ -823,6 +831,66 @@ namespace bsk___proba_2
             {
                 new KeyValuePair<string, string>(NazwaKolumnyLoginow,user)
             });
+        }
+
+        public static bool MożnaDodawaćUżytkownika()
+        {
+            return CanInsert(TabelaZPracownikami);
+        }
+
+        public static bool MożnaEdytowaćUserów()
+        {
+            return CanUpdate(TabelaZPracownikami);
+        }
+
+        public static List<string> FormularzPracownika()
+        {
+            List<string> listaKolumn = ListaKolumn(TabelaZPracownikami);
+            foreach (string s in ListaPólUseraNiePytać)
+                listaKolumn.RemoveAll(s1 => s1.Equals(s, StringComparison.CurrentCultureIgnoreCase));
+            return listaKolumn;
+        }
+
+        public static List<string> GetKluczGłównyPracowników()
+        {
+            return KluczGłównyPracowników;
+        }
+
+        public static void DodajUżytkownika(List<KeyValuePair<string, string>> kolWart)
+        {
+            int index = kolWart.FindIndex(
+                pair => pair.Key.Equals(NazwaKolumnyHasel, StringComparison.CurrentCultureIgnoreCase));
+            string haslo = kolWart[index].Value;
+            kolWart.RemoveAt(index);
+            kolWart.Add(new KeyValuePair<string, string>(NazwaKolumnyHasel,
+                sha256_hash(haslo)));
+            Insert(TabelaZPracownikami,kolWart);
+        }
+
+        public static List<KeyValuePair<string, string>> EdytowanyUżytkownik(string login)
+        {
+            List<string> GłownyPracowników = KluczGlowny(TabelaZPracownikami);
+            List<string> idPracownikaEdytowanego = Select(TabelaZPracownikami, new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>(NazwaKolumnyLoginow, login)
+            }, GłownyPracowników)[0];
+
+            List<KeyValuePair<string, string>> where = GłownyPracowników.Select((s, i) => new KeyValuePair<string, string>(s, idPracownikaEdytowanego[i])).ToList();
+
+            List<string> listaKolumn = ListaKolumn(TabelaZPracownikami);
+            List<KeyValuePair<string,string>> wynik = new List<KeyValuePair<string, string>>();
+            List<List<string>> edytowanyPracownik = Select(TabelaZPracownikami, @where);
+            for (var i = 0; i < listaKolumn.Count; i++)
+                if (ListaPólUseraNiePytać.FindIndex(s => s.Equals(listaKolumn[i],StringComparison.CurrentCultureIgnoreCase))==-1)
+                    wynik.Add(new KeyValuePair<string, string>(listaKolumn[i], edytowanyPracownik[0][i]));
+            wynik.RemoveAll(pair => pair.Key.Equals(NazwaKolumnyHasel, StringComparison.CurrentCultureIgnoreCase));
+            wynik.RemoveAll(pair => pair.Key.Equals(NazwaKolumnyLoginow, StringComparison.CurrentCultureIgnoreCase));
+            return wynik;
+        }
+
+        public static void EdytujUżytkownika(List<KeyValuePair<string, string>> kolWart, List<KeyValuePair<string, string>> idKlucza)
+        {
+            Update(TabelaZPracownikami,kolWart,idKlucza);
         }
     }
 }

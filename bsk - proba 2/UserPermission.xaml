@@ -20,8 +20,9 @@
         <Button Name="ButtonEdycjiRól" Content="Oglądaj/Edytuj rolę" HorizontalAlignment="Left" Margin="195,360,0,0" VerticalAlignment="Top" Width="110" IsEnabled="False" Click="ButtonEdycjiRól_Click"/>
         <ComboBox Name="ComboBoxEdycjiRól" Visibility="Visible" HorizontalAlignment="Left" Margin="227,307,0,0" VerticalAlignment="Top" Width="75" Height="19" SelectionChanged="ComboBoxEdycjiRól_SelectionChanged"/>
         <Label Content="Wybierz rolę" HorizontalAlignment="Left" Margin="227,276,0,0" VerticalAlignment="Top"/>
-        <Button Name="ButtonUsuwaniaUsera" Content="Usuń użytkownika" HorizontalAlignment="Left" Margin="194,152,0,0" VerticalAlignment="Top" Width="108" IsEnabled="False" Click="ButtonUsuwaniaUsera_Click"/>
-        <Button Name="ButtonDodawaniaUsera" Content="Nowy użytkownik" HorizontalAlignment="Left" Margin="195,97,0,0" VerticalAlignment="Top" Width="107"/>
+        <Button Name="ButtonUsuwaniaUsera" Content="Usuń użytkownika" HorizontalAlignment="Left" Margin="194,174,0,0" VerticalAlignment="Top" Width="108" IsEnabled="False" Click="ButtonUsuwaniaUsera_Click"/>
+        <Button Name="ButtonDodawaniaUsera" Content="Nowy użytkownik" HorizontalAlignment="Left" Margin="195,97,0,0" VerticalAlignment="Top" Width="107" Click="ButtonDodawaniaUsera_Click"/>
+        <Button Name="ButtonEdytowaniaUsera"  Content="EdycjaUżytkownika" HorizontalAlignment="Left" Margin="195,134,0,0" VerticalAlignment="Top" Width="107" IsEnabled="False" Click="ButtonEdytowaniaUsera_Click"/>
 
     </Grid>
 </Window>
