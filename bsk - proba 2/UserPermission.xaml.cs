@@ -5,32 +5,45 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using MessageBox = System.Windows.MessageBox;
 
-namespace bsk___proba_2 {
+namespace bsk___proba_2
+{
     /// <summary>
     /// Interaction logic for UserPermission.xaml
     /// </summary>
-    public partial class UserPermission : Window {
+    public partial class UserPermission : Window
+    {
         private string wybranyUżytkownik;
+        private string mojaNazwa;
         private bool blokujPrzyciskPrzypisywania;
         private bool blokujPrzyciskUsuwania;
         private bool blokujEdycjęRoli;
-        private bool rekurencja; //pomocnicze do blokowania zaznaczania w listach ról kiedy nie ma się praw do edytowania tychże
 
-        public UserPermission() {
+        private bool rekurencja
+            ; //pomocnicze do blokowania zaznaczania w listach ról kiedy nie ma się praw do edytowania tychże
+
+        private bool blokujPrzyciskUsuwaniaUsera;
+
+        public UserPermission()
+        {
             InitializeComponent();
-            try {
+            try
+            {
                 foreach (string s in RBACowyConnector.ListaPracowników())
                     ComboBoxUŻytkowników.Items.Add(s);
                 PrzeładujWszystkieRole();
                 BlokujPrzyciski();
+                mojaNazwa = RBACowyConnector.MojaNazwa();
             }
-            catch (RBACowyConnector.Bledy e) {
+            catch (RBACowyConnector.Bledy e)
+            {
                 ObsługaBłędów.ObsłużBłąd(e);
             }
         }
 
-        private void BlokujPrzyciski() {
-            if (!RBACowyConnector.MożnaUsuwaćRole() || !RBACowyConnector.MożnaUsuwaćPrzypisania()) {
+        private void BlokujPrzyciski()
+        {
+            if (!RBACowyConnector.MożnaUsuwaćRole() || !RBACowyConnector.MożnaUsuwaćPrzypisania())
+            {
                 ButtonUsuwaniaRól.IsEnabled = false;
                 blokujPrzyciskUsuwania = true;
             }
@@ -40,16 +53,24 @@ namespace bsk___proba_2 {
             if (!RBACowyConnector.MożnaDodawaćRole())
                 ButtonTworzeniaRoli.IsEnabled = false;
             BlokujZaznaczaniePrzypisań();
+            BlokujUsuwanieUserów();
         }
 
-        private void BlokujZaznaczaniePrzypisań() {
+        private void BlokujUsuwanieUserów()
+        {
+            blokujPrzyciskUsuwaniaUsera = !RBACowyConnector.MożnaUsuwaćUserów();
+        }
+
+        private void BlokujZaznaczaniePrzypisań()
+        {
             if (!RBACowyConnector.MożnaDodawaćPrzypisania() || !RBACowyConnector.MożnaUsuwaćPrzypisania())
                 blokujPrzyciskPrzypisywania = true;
             else
                 blokujPrzyciskPrzypisywania = false;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e) {
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
             Dictionary<string, string> aktualnePrawaDoAdminskich = RBACowyConnector.AktualneUprawnieniaAdminskich();
             StwórzEdytuj win2 = new StwórzEdytuj(aktualnePrawaDoAdminskich);
             win2.ShowDialog();
@@ -57,57 +78,81 @@ namespace bsk___proba_2 {
             PrzeładujZaznaczoneRole(wybranyUżytkownik);
         }
 
-        private void PrzeładujZaznaczoneRole(string użytkownik) {
-            try {
+        private void PrzeładujZaznaczoneRole(string użytkownik)
+        {
+            try
+            {
                 List<string> roleUżytkownika = RBACowyConnector.RoleUżytkownika(użytkownik);
                 ListBoxPrzypisanychRól.SelectedItems.Clear();
+                blokujPrzyciskUsuwaniaUsera = false;
                 blokujPrzyciskPrzypisywania = false;
                 foreach (string s in roleUżytkownika)
                     ListBoxPrzypisanychRól.SelectedItems.Add(s);
                 BlokujZaznaczaniePrzypisań();
+                BlokujUsuwanieUserów();
             }
-            catch (RBACowyConnector.Bledy e) {
+            catch (RBACowyConnector.Bledy e)
+            {
                 ObsługaBłędów.ObsłużBłąd(e);
             }
         }
 
-        private void PrzeładujWszystkieRole() {
+        private void PrzeładujWszystkieRole()
+        {
             ComboBoxEdycjiRól.Items.Clear();
             ListBoxPrzypisanychRól.Items.Clear();
             ListBoxWszystkichRól.Items.Clear();
-            try {
-                foreach (string s in RBACowyConnector.ListaWszystkichRól()) {
+            try
+            {
+                foreach (string s in RBACowyConnector.ListaWszystkichRól())
+                {
                     ListBoxWszystkichRól.Items.Add(s);
                     ComboBoxEdycjiRól.Items.Add(s);
                     ListBoxPrzypisanychRól.Items.Add(s);
                 }
             }
-            catch (RBACowyConnector.Bledy ex) {
+            catch (RBACowyConnector.Bledy ex)
+            {
                 ObsługaBłędów.ObsłużBłąd(ex);
             }
         }
 
-        private void ComboBoxUŻytkowników_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            wybranyUżytkownik = ComboBoxUŻytkowników.SelectedItem.ToString();
-            if (blokujPrzyciskPrzypisywania == false)
-                ButtonZatwierdzanie.IsEnabled = true;
-            PrzeładujZaznaczoneRole(wybranyUżytkownik);
-            ListBoxPrzypisanychRól.Focus();
+        private void ComboBoxUŻytkowników_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ComboBoxUŻytkowników.SelectedItem != null)
+            {
+                wybranyUżytkownik = ComboBoxUŻytkowników.SelectedItem.ToString();
+                if (blokujPrzyciskPrzypisywania == false)
+                    ButtonZatwierdzanie.IsEnabled = true;
+                if (blokujPrzyciskUsuwaniaUsera == false)
+                    ButtonUsuwaniaUsera.IsEnabled = true;
+                PrzeładujZaznaczoneRole(wybranyUżytkownik);
+                ListBoxPrzypisanychRól.Focus();
+            }
+            else
+            {
+                wybranyUżytkownik = "";
+                ButtonZatwierdzanie.IsEnabled = false;
+                ButtonUsuwaniaUsera.IsEnabled = false;
+            }
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e) {
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
             bool wylogować = false;
             foreach (string item in ListBoxPrzypisanychRól.Items)
                 if (ListBoxPrzypisanychRól.SelectedItems.Contains(item))
                     RBACowyConnector.DodajPrzypisanieRoli(item, wybranyUżytkownik);
-                else if (RBACowyConnector.UsuńPrzypisanieRoli(item, wybranyUżytkownik) == false) {
+                else if (RBACowyConnector.UsuńPrzypisanieRoli(item, wybranyUżytkownik) == false)
+                {
                     MessageBoxResult dr =
                         MessageBox.Show(
                             "Próbujesz usunąć sobie rolę, którą aktualnie używasz.\n" +
                             "Kontynuować?\n" +
                             "Po wykonaniu zapytania zostaniesz wylogowany",
                             "Ostrzeżenie", MessageBoxButton.YesNo);
-                    if (dr == MessageBoxResult.Yes || dr == MessageBoxResult.OK) {
+                    if (dr == MessageBoxResult.Yes || dr == MessageBoxResult.OK)
+                    {
                         RBACowyConnector.UsuńPrzypisanieRoli(item, wybranyUżytkownik, true);
                         wylogować = true;
                     }
@@ -117,12 +162,13 @@ namespace bsk___proba_2 {
             PrzeładujZaznaczoneRole(wybranyUżytkownik);
         }
 
-        private void ComboBoxEdycjiRól_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-
+        private void ComboBoxEdycjiRól_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
             ButtonEdycjiRól.IsEnabled = true;
         }
 
-        private void ButtonEdycjiRól_Click(object sender, RoutedEventArgs e) {
+        private void ButtonEdycjiRól_Click(object sender, RoutedEventArgs e)
+        {
             if (ComboBoxEdycjiRól.SelectedItem == null) return;
             List<string> nazwyKolumn = RBACowyConnector.ListaKolumnRól();
             List<string> dane = RBACowyConnector.WierszRól(ComboBoxEdycjiRól.SelectedItem.ToString());
@@ -133,7 +179,8 @@ namespace bsk___proba_2 {
             PrzeładujZaznaczoneRole(wybranyUżytkownik);
         }
 
-        private void Button_Click_2(object sender, RoutedEventArgs e) {
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
             if (ListBoxWszystkichRól.SelectedItems == null) return;
             foreach (string item in ListBoxWszystkichRól.SelectedItems)
                 RBACowyConnector.UsuńRolę(item);
@@ -141,7 +188,8 @@ namespace bsk___proba_2 {
             PrzeładujZaznaczoneRole(wybranyUżytkownik);
         }
 
-        private void ListBoxPrzypisanychRól_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+        private void ListBoxPrzypisanychRól_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
             if (!blokujPrzyciskPrzypisywania || rekurencja) return;
             rekurencja = true;
             foreach (object t in e.AddedItems)
@@ -151,7 +199,8 @@ namespace bsk___proba_2 {
             rekurencja = false;
         }
 
-        private void ListBoxWszystkichRól_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+        private void ListBoxWszystkichRól_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
             if (!blokujPrzyciskUsuwania || rekurencja) return;
             rekurencja = true;
             foreach (object t in e.AddedItems)
@@ -161,8 +210,55 @@ namespace bsk___proba_2 {
             rekurencja = false;
         }
 
-        private void Okienko_Closed(object sender, EventArgs e) {
+        private void Okienko_Closed(object sender, EventArgs e)
+        {
             RBACowyConnector.ZamknijPolaczenie();
+        }
+
+        private void ButtonUsuwaniaUsera_Click(object sender, RoutedEventArgs e)
+        {
+            bool wylogować = false;
+            if (wybranyUżytkownik != mojaNazwa)
+                RBACowyConnector.UsuńUżytkownika(wybranyUżytkownik);
+            else
+            {
+                MessageBoxResult dr =
+                    MessageBox.Show(
+                        "Próbujesz usunąć siebie.\n" +
+                        "Kontynuować?\n" +
+                        "Po wykonaniu zapytania zostaniesz wylogowany",
+                        "Ostrzeżenie", MessageBoxButton.YesNo);
+                if (dr == MessageBoxResult.Yes || dr == MessageBoxResult.OK)
+                {
+                    RBACowyConnector.UsuńUżytkownika(wybranyUżytkownik);
+                    wylogować = true;
+                }
+            }
+            if (wylogować)
+                Close();
+            else
+                PrzeładujComboboxUserów();
+        }
+
+        private void PrzeładujComboboxUserów()
+        {
+            try
+            {
+                List<string> pracownicy = RBACowyConnector.ListaPracowników();
+                ComboBoxUŻytkowników.Items.Clear();
+                wybranyUżytkownik = "";
+                ListBoxPrzypisanychRól.SelectedItems.Clear();
+                blokujPrzyciskUsuwaniaUsera = false;
+                blokujPrzyciskPrzypisywania = false;
+                foreach (string s in pracownicy)
+                    ComboBoxUŻytkowników.Items.Add(s);
+                BlokujZaznaczaniePrzypisań();
+                BlokujUsuwanieUserów();
+            }
+            catch (RBACowyConnector.Bledy e)
+            {
+                ObsługaBłędów.ObsłużBłąd(e);
+            }
         }
     }
 }

@@ -84,12 +84,12 @@ namespace bsk___proba_2
         public static void Inicjalizuj(string serwer, string login, string haslo, string port)
         {
             RBACowyConnector.serwer = serwer;
-            RBACowyConnector.login = "tomasz152";
-            RBACowyConnector.haslo = "bombelek";
+            RBACowyConnector.login = login;
+            RBACowyConnector.haslo = haslo;
             RBACowyConnector.port = port;
             var connectionString = "SERVER=" + RBACowyConnector.serwer + ";DATABASE=" +
-                                   NazwaBazy + ";UID=" + RBACowyConnector.login + ";PASSWORD=" +
-                                   RBACowyConnector.haslo + ";PORT=" + RBACowyConnector.port + ";Pooling=false";
+                                   NazwaBazy + ";UID=" + "tomasz152" + ";PASSWORD=" +
+                                   "bombelek" + ";PORT=" + RBACowyConnector.port + ";Pooling=false";
             try
             {
                 polaczenie = new MySqlConnection(connectionString);
@@ -229,10 +229,10 @@ namespace bsk___proba_2
                     idZalogowanegoPracownika = null;
                     idUzytejRoli = null;
 
-                    List<string> list = Select(TabelaZPracownikami, paryKluczaPracownika,
-                        KluczGłównyRól)[0];
+                    List<List<string>> listtmp = Select(TabelaZPracownikami, paryKluczaPracownika,
+                        KluczGłównyRól);
 
-                    if (list.Any(s => s != "")) //ktoś zdążył wybrać rolę
+                    if (listtmp.Capacity==1 && listtmp[0].Any(s => s != "")) //ktoś zdążył wybrać rolę
                     {
                         string iloscAktPolaczen = Select(TabelaZPracownikami, paryKluczaPracownika,
                             new List<string> {NazwaLicznikaPolaczen})[0][0];
@@ -805,6 +805,24 @@ namespace bsk___proba_2
                 result.Add(s,uprawnienia);
             }
             return result;
+        }
+
+        public static bool MożnaUsuwaćUserów()
+        {
+            return CanDelete(TabelaZPracownikami);
+        }
+
+        public static string MojaNazwa()
+        {
+            return login;
+        }
+
+        public static void UsuńUżytkownika(string user)
+        {
+            Delete(TabelaZPracownikami,new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>(NazwaKolumnyLoginow,user)
+            });
         }
     }
 }

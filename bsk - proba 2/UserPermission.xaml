@@ -5,7 +5,7 @@
         Title="Zarządzaj rolami" Height="641.975" Width="330.955" Closed="Okienko_Closed">
     <Grid Margin="0,0,0,0">
         <ComboBox Name="ComboBoxUŻytkowników" HorizontalAlignment="Left" Margin="137,19,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="ComboBoxUŻytkowników_SelectionChanged" />
-        <Button Name="ButtonZatwierdzanie"  Content="Zatwierdź role" HorizontalAlignment="Left" VerticalAlignment="Top" Width="108" Margin="197,97,0,0" Click="Button_Click_1" IsEnabled="False"/>
+        <Button Name="ButtonZatwierdzanie"  Content="Zatwierdź role" HorizontalAlignment="Left" VerticalAlignment="Top" Width="108" Margin="194,214,0,0" Click="Button_Click_1" IsEnabled="False"/>
         <Label Content="Wybierz użytkownika" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,19,0,0"/>
         <ListBox Name="ListBoxPrzypisanychRól" HorizontalAlignment="Left" Height="137" Margin="12,97,0,0" VerticalAlignment="Top" Width="163" SelectionMode="Multiple" SelectionChanged="ListBoxPrzypisanychRól_SelectionChanged"/>
         <Label Content="Filtruj role" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12,66,0,0"/>
@@ -20,6 +20,8 @@
         <Button Name="ButtonEdycjiRól" Content="Oglądaj/Edytuj rolę" HorizontalAlignment="Left" Margin="195,360,0,0" VerticalAlignment="Top" Width="110" IsEnabled="False" Click="ButtonEdycjiRól_Click"/>
         <ComboBox Name="ComboBoxEdycjiRól" Visibility="Visible" HorizontalAlignment="Left" Margin="227,307,0,0" VerticalAlignment="Top" Width="75" Height="19" SelectionChanged="ComboBoxEdycjiRól_SelectionChanged"/>
         <Label Content="Wybierz rolę" HorizontalAlignment="Left" Margin="227,276,0,0" VerticalAlignment="Top"/>
+        <Button Name="ButtonUsuwaniaUsera" Content="Usuń użytkownika" HorizontalAlignment="Left" Margin="194,152,0,0" VerticalAlignment="Top" Width="108" IsEnabled="False" Click="ButtonUsuwaniaUsera_Click"/>
+        <Button Name="ButtonDodawaniaUsera" Content="Nowy użytkownik" HorizontalAlignment="Left" Margin="195,97,0,0" VerticalAlignment="Top" Width="107"/>
 
     </Grid>
 </Window>
