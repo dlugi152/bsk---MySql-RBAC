@@ -303,8 +303,20 @@ namespace bsk___proba_2
                     else
                     {
                         Random rnd = new Random();
-                        for (int i = 0; i < 3; i++)
-                            sb.Append((char)rnd.Next('A', 'Z'));
+                        
+                        for (int i = 0; i < 10; i++)
+                            switch (rnd.Next(3))
+                            {
+                                case 0:
+                                    sb.Append((char)rnd.Next('0', '9'+1));
+                                    break;
+                                case 1:
+                                    sb.Append((char)rnd.Next('A', 'Z'+1));
+                                    break;
+                                case 2:
+                                    sb.Append((char)rnd.Next('a', 'z'+1));
+                                    break;
+                            }
                         kolWart.Add(new KeyValuePair<string, string>(kolumna,sb.ToString()));
                     }
                 }
@@ -313,6 +325,7 @@ namespace bsk___proba_2
             {
                 RBACowyConnector.DodajUżytkownika(kolWart);
                 MessageBox.Show("jednorazowe hasło: " + sb);
+                PrzeładujComboboxUserów();
             }
             catch (RBACowyConnector.Bledy blad)
             {
