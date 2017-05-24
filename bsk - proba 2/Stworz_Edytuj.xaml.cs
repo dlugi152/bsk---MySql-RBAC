@@ -21,6 +21,7 @@ namespace bsk___proba_2
         private bool blokujEdycję;
         private bool blokujZaznaczanie;
         private bool calkowiteBlokowanie;
+        private bool blokujBlokowanie=true;
 
         public StwórzEdytuj(Dictionary<string, string> maxUprawnieniaAdmińskie)
         {
@@ -79,11 +80,14 @@ namespace bsk___proba_2
 
         private void PoblokujPrzyciski(string item)
         {
+            if (blokujBlokowanie==false)
             CheckBoxAdmiński.IsEnabled = !calkowiteBlokowanie;
-            TextBoxNazwy.IsEnabled = !calkowiteBlokowanie;
+            if (blokujBlokowanie == false)
+                TextBoxNazwy.IsEnabled = !calkowiteBlokowanie;
             if (item != "")
             {
-                if (CheckBoxAdmiński.IsChecked == true)
+                if (blokujBlokowanie == false)
+                    if (CheckBoxAdmiński.IsChecked == true)
                 {
                     CheckBoxEdycji.IsEnabled = !calkowiteBlokowanie && MaxUprawnieniaAdmińskie[item].Contains('u');
                     CheckBoxOdczytu.IsEnabled = !calkowiteBlokowanie && MaxUprawnieniaAdmińskie[item].Contains('s');
@@ -92,6 +96,7 @@ namespace bsk___proba_2
                 }
             }
             else
+            if (blokujBlokowanie == false)
             {
                 CheckBoxEdycji.IsEnabled = true;
                 CheckBoxOdczytu.IsEnabled = true;
@@ -113,7 +118,7 @@ namespace bsk___proba_2
             ZaladujTabele();
             CheckBoxOdczytu.IsChecked = CheckBoxZapisu.IsChecked =
                 CheckBoxEdycji.IsChecked = CheckBoxUsuwania.IsChecked = false;
-            if (CheckBoxAdmiński.IsChecked != true && blokujEdycję == false)
+            if (CheckBoxAdmiński.IsChecked != true && blokujEdycję == false || blokujBlokowanie)
                 CheckBoxOdczytu.IsEnabled = true;
         }
 
@@ -135,7 +140,8 @@ namespace bsk___proba_2
             else
             {
                 CheckBoxOdczytu.IsChecked = true;
-                CheckBoxOdczytu.IsEnabled = false;
+                if (blokujBlokowanie == false)
+                    CheckBoxOdczytu.IsEnabled = false;
             }
             CheckBoxZapisu.IsChecked = CzyZaznaczyć(ComboBoxTabel.SelectedItem.ToString(), 'i');
             CheckBoxEdycji.IsChecked = CzyZaznaczyć(ComboBoxTabel.SelectedItem.ToString(), 'u');

@@ -38,6 +38,10 @@ namespace bsk___proba_2
             {
                 ObsługaBłędów.ObsłużBłąd(e);
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void BlokujPrzyciski()
@@ -103,6 +107,10 @@ namespace bsk___proba_2
             {
                 ObsługaBłędów.ObsłużBłąd(e);
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void PrzeładujWszystkieRole()
@@ -122,6 +130,10 @@ namespace bsk___proba_2
             catch (RBACowyConnector.Bledy ex)
             {
                 ObsługaBłędów.ObsłużBłąd(ex);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 

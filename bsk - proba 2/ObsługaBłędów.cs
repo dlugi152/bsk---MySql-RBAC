@@ -14,7 +14,7 @@ namespace bsk___proba_2
             switch (ex.Kod)
             {
                 case RBACowyConnector.KodyBledow.BlednyLoginHaslo:
-                    MessageBox.Show("Błędny login lub hasło");
+                    MessageBox.Show("Błędny login lub hasła");
                     break;
                 case RBACowyConnector.KodyBledow.BladLaczenia:
                     MessageBox.Show("Błąd podczas łaczenia z bazą\nJesteś pewny, że adres serwera i port są poprawne?");
@@ -26,7 +26,7 @@ namespace bsk___proba_2
                     MessageBox.Show("Nie masz praw do insertowania tabeli " + ex.Tabela);
                     break;
                 case RBACowyConnector.KodyBledow.BrakSelect:
-                    MessageBox.Show("Nie masz praw do selectowania tabeli "+ex.Tabela);
+                    MessageBox.Show("Nie masz praw do selectowania tabeli " + ex.Tabela);
                     break;
                 case RBACowyConnector.KodyBledow.BrakDelete:
                     MessageBox.Show("Nie masz praw do deletowania tabeli " + ex.Tabela);
@@ -35,7 +35,7 @@ namespace bsk___proba_2
                     MessageBox.Show("Nie masz praw do edytowania tabeli " + ex.Tabela);
                     break;
                 case RBACowyConnector.KodyBledow.NieprawidłoweDane:
-                    if (ex.Typ != null && ex.Wartosc != null)//jest pełne info nt. błędu
+                    if (ex.Typ != null && ex.Wartosc != null) //jest pełne info nt. błędu
                         MessageBox.Show("Wpisałeś wartość " + ex.Wartosc + " dla kolumny " + ex.Kolumna +
                                         ". Ta kolumna wymaga " + ex.Typ);
                     else
@@ -58,7 +58,14 @@ namespace bsk___proba_2
                                     "jeśli chcesz pełnić nową rolę");
                     break;
                 case RBACowyConnector.KodyBledow.MozeDaty:
-                    MessageBox.Show("Twoje dane nie były spójne. Może daty odwrotnie niż trzeba?");
+                    MessageBox.Show("Twoje dane nie były spójne lub były w nieprawidłowym formacie.\n" +
+                                    "Może daty odwrotnie niż trzeba?");
+                    break;
+                case RBACowyConnector.KodyBledow.BledneHasłoKlucza:
+                    MessageBox.Show("Błędny login lub hasło");
+                    break;
+                case RBACowyConnector.KodyBledow.NieprawidłowyFormat:
+                    MessageBox.Show("Podałeś nieprawidłowy format danych");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

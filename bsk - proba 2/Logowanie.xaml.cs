@@ -17,6 +17,7 @@ namespace bsk___proba_2
         }
 
         private bool wybranoRolę;
+        private string wybranyPlik;
 
         private void zaloguj()
         {
@@ -25,14 +26,15 @@ namespace bsk___proba_2
                 RBACowyConnector.Inicjalizuj(AdresTextBox.Text, //ip
                     loginTextBox.Text,
                     hasloTextBox.Password,
-                    PortTextBox.Text);
+                    PortTextBox.Text, wybranyPlik, HasłoCert.Password);
                 if (RBACowyConnector.PierwszeLogowanie())
                 {
                     while (true)
                     {
                         string stareHaslo, noweHaslo;
-                        var w = new ProstyTextBox("Podaj stare hasło\n\n\n\n\n\n\n\n\nZamknij to okno, żeby \nzrezygnować ze zmiany\n" +
-                                                  "i się wylogować");
+                        var w = new ProstyTextBox(
+                            "Podaj stare hasło\n\n\n\n\n\n\n\n\nZamknij to okno, żeby \nzrezygnować ze zmiany\n" +
+                            "i się wylogować");
                         if (w.ShowDialog() == true)
                             stareHaslo = w.TextDoPrzekazania;
                         else
@@ -85,6 +87,10 @@ namespace bsk___proba_2
             {
                 ObsługaBłędów.ObsłużBłąd(ex);
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -102,6 +108,31 @@ namespace bsk___proba_2
         {
             if (e.Key == Key.Enter)
                 zaloguj();
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            // Create OpenFileDialog 
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+
+
+
+            // Set filter for file extension and default file extension 
+            dlg.DefaultExt = ".pem";
+            dlg.Filter = "Pliki PEM (*.pem)|*.pem";
+
+
+            // Display OpenFileDialog by calling ShowDialog method 
+            Nullable<bool> result = dlg.ShowDialog();
+
+
+            // Get the selected file name and display in a TextBox 
+            if (result == true)
+            {
+                // Open document 
+                string filename = dlg.FileName;
+                wybranyPlik =  filename;
+            }
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -60,7 +61,9 @@ namespace bsk___proba_2
             BrakDanych,
             TriggerZablokowal,
             InnaRolaPelniona,
-            MozeDaty
+            MozeDaty,
+            BledneHasłoKlucza,
+            NieprawidłowyFormat
         }
 
         public class Bledy : Exception
@@ -87,7 +90,7 @@ namespace bsk___proba_2
         {
         }
 
-        public static void Inicjalizuj(string serwer, string login, string haslo, string port)
+        public static void Inicjalizuj(string serwer, string login, string haslo, string port,string plik,string hasloKlucza)
         {
             RBACowyConnector.serwer = serwer;
             RBACowyConnector.login = login;
@@ -95,7 +98,8 @@ namespace bsk___proba_2
             RBACowyConnector.port = port;
             var connectionString = "SERVER=" + RBACowyConnector.serwer + ";DATABASE=" +
                                    NazwaBazy + ";UID=" + "tomasz152" + ";PASSWORD=" +
-                                   "bombelek" + ";PORT=" + RBACowyConnector.port + ";Pooling=false";
+                                   "bombelek" + ";PORT=" + RBACowyConnector.port +
+                                   ";Pooling=false;SSL Mode=Required";
             try
             {
                 polaczenie = new MySqlConnection(connectionString);
@@ -207,8 +211,25 @@ namespace bsk___proba_2
 
         public static bool TestujPolaczenie()
         {
-            polaczenie.Open();
-            polaczenie.Close();
+            try
+            {
+                polaczenie.Open();
+                polaczenie.Close();
+            }
+            catch (CryptographicException)
+            {
+                throw new Bledy
+                {
+                    Kod = KodyBledow.BledneHasłoKlucza
+                };
+            }
+            catch (AuthenticationException)
+            {
+                throw new Bledy
+                {
+                    Kod = KodyBledow.BledneHasłoKlucza
+                };
+            }
             return true;
         }
 
@@ -338,6 +359,7 @@ namespace bsk___proba_2
             string parser1364 = "Field '%s' doesn't have a default value";
             string parser1265 = "Data truncated for column '%s' at row %ld";
             string parser1054 = "Unknown column '%s' in '%s'";
+            string parser1292 = "Truncated incorrect %s value: '%s'";
             object[] targets;
             switch (ex.Number)
             {
@@ -384,6 +406,12 @@ namespace bsk___proba_2
                     throw new Bledy
                     {
                         Kod = KodyBledow.MozeDaty
+                    };
+                case 1292:
+                    //targets = scanner.Scan(ex.Message, parser1292, false);
+                    throw new Bledy
+                    {
+                        Kod = KodyBledow.NieprawidłowyFormat,
                     };
                 default:
                     throw new Exception("Nieoczekiwany błąd o kodzie " + ex.Number);
@@ -557,7 +585,19 @@ namespace bsk___proba_2
                     for (int i = 0; i < dataReader.FieldCount; i++)
                         try
                         {
-                            nowaLista.Add(dataReader.GetString(i));
+                            string typ = dataReader.GetDataTypeName(i);
+                            switch (typ)
+                            {
+                                case "DATE":
+                                    nowaLista.Add(dataReader.GetDateTime(i).Date.ToString("yyyy-MM-dd"));
+                                    break;
+                                case "TIME":
+                                    nowaLista.Add(dataReader.GetTimeSpan(i).Hours+":"+dataReader.GetTimeSpan(i).Minutes);
+                                    break;
+                                default:
+                                    nowaLista.Add(dataReader.GetString(i));
+                                    break;
+                            }
                         }
                         catch
                         {

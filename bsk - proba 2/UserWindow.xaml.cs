@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 
 namespace bsk___proba_2
@@ -46,9 +47,9 @@ namespace bsk___proba_2
                 MessageBox.Show("Musisz wybrać jakąś tabelę");
             else
             {
-                List<string> kluczGlowny = RBACowyConnector.KluczGlowny((string)Tabele.SelectedItem);
+                List<string> kluczGlowny = RBACowyConnector.KluczGlowny((string) Tabele.SelectedItem);
                 List<KeyValuePair<string, string>> kolWart = new List<KeyValuePair<string, string>>();
-                foreach (string kolumna in RBACowyConnector.ListaKolumn((string)Tabele.SelectedItem))
+                foreach (string kolumna in RBACowyConnector.ListaKolumn((string) Tabele.SelectedItem))
                 {
                     if (!kluczGlowny.Contains(kolumna))
                     {
@@ -60,16 +61,21 @@ namespace bsk___proba_2
                 }
                 try
                 {
-                    RBACowyConnector.Insert((string)Tabele.SelectedItem, kolWart);
+                    RBACowyConnector.Insert((string) Tabele.SelectedItem, kolWart);
                 }
                 catch (RBACowyConnector.Bledy blad)
                 {
                     ObsługaBłędów.ObsłużBłąd(blad);
                 }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
             }
         }
 
-        private void Window_Closed(object sender, System.EventArgs e) {
+        private void Window_Closed(object sender, System.EventArgs e)
+        {
             RBACowyConnector.ZamknijPolaczenie();
         }
 

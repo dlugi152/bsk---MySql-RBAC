@@ -10,6 +10,7 @@ namespace bsk___proba_2
     public partial class Wybór_Roli : Window
     {
         private string login;
+
         public Wybór_Roli(string login)
         {
             this.login = login;
@@ -29,6 +30,10 @@ namespace bsk___proba_2
             catch (RBACowyConnector.Bledy bledy)
             {
                 ObsługaBłędów.ObsłużBłąd(bledy);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 
