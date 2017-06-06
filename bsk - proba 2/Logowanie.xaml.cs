@@ -32,7 +32,7 @@ namespace bsk___proba_2
                     while (true)
                     {
                         string stareHaslo, noweHaslo;
-                        var w = new ProstyTextBox(
+                        var w = new OknoHaslo(
                             "Podaj stare hasło\n\n\n\n\n\n\n\n\nZamknij to okno, żeby \nzrezygnować ze zmiany\n" +
                             "i się wylogować");
                         if (w.ShowDialog() == true)
@@ -44,7 +44,7 @@ namespace bsk___proba_2
                             MessageBox.Show("Użytkownik podał złe hasło. Spróbuj ponownie");
                             continue;
                         }
-                        var w2 = new ProstyTextBox("Podaj nowe hasło");
+                        var w2 = new OknoHaslo("Podaj nowe hasło");
                         if (w2.ShowDialog() == true)
                             noweHaslo = w2.TextDoPrzekazania;
                         else
@@ -52,13 +52,21 @@ namespace bsk___proba_2
                             MessageBox.Show("Użytkownik nie podał nowego hasła. Spróbuj ponownie");
                             continue;
                         }
-                        var w3 = new ProstyTextBox("Powtórz nowe hasło");
+                        var w3 = new OknoHaslo("Powtórz nowe hasło");
                         if (w3.ShowDialog() != true || noweHaslo != w3.TextDoPrzekazania)
                         {
                             MessageBox.Show("Użytkownik nie powtórzył hasła. Spróbuj ponownie");
                             continue;
                         }
-                        RBACowyConnector.AktualizujHasło(loginTextBox.Text, noweHaslo);
+                        try
+                        {
+                            RBACowyConnector.AktualizujHasło(loginTextBox.Text, noweHaslo);
+                        }
+                        catch (RBACowyConnector.Bledy ex)
+                        {
+                            ObsługaBłędów.ObsłużBłąd(ex);
+                            continue;
+                        }
                         break;
                     }
                 }

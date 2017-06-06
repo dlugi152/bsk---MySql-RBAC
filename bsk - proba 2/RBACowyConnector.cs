@@ -63,7 +63,8 @@ namespace bsk___proba_2
             InnaRolaPelniona,
             MozeDaty,
             BledneHasłoKlucza,
-            NieprawidłowyFormat
+            NieprawidłowyFormat,
+            SlabeHaslo
         }
 
         public class Bledy : Exception
@@ -274,8 +275,11 @@ namespace bsk___proba_2
                         Update(TabelaZPracownikami, paryUzytejRoli, paryKluczaPracownika);
                     }
                 }
-                polaczenie.Close();
-                polaczenie.Dispose();
+                if (polaczenie != null)
+                {
+                    polaczenie.Close();
+                    polaczenie.Dispose();
+                }
                 return true;
             }
             catch (MySqlException ex)
@@ -942,6 +946,11 @@ namespace bsk___proba_2
 
         public static void AktualizujHasło(string login, string noweHaslo)
         {
+            //"^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$"
+            Regex rgx = new Regex(@"^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$");
+
+            if (!rgx.IsMatch(noweHaslo))
+                throw new Bledy{Kod = KodyBledow.SlabeHaslo};
             Update(TabelaZPracownikami,new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>(NazwaKolumnyHasel,sha256_hash(noweHaslo)),

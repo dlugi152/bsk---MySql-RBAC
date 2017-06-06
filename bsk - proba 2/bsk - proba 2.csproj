@@ -67,6 +67,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ObsługaBłędów.cs" />
+    <Compile Include="OknoHaslo.xaml.cs">
+      <DependentUpon>OknoHaslo.xaml</DependentUpon>
+    </Compile>
     <Compile Include="OknoTabeli.xaml.cs">
       <DependentUpon>OknoTabeli.xaml</DependentUpon>
     </Compile>
@@ -99,6 +102,10 @@
       <DependentUpon>Logowanie.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="OknoHaslo.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="OknoTabeli.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

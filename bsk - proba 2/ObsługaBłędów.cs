@@ -67,6 +67,10 @@ namespace bsk___proba_2
                 case RBACowyConnector.KodyBledow.NieprawidłowyFormat:
                     MessageBox.Show("Podałeś nieprawidłowy format danych");
                     break;
+                case RBACowyConnector.KodyBledow.SlabeHaslo:
+                    MessageBox.Show("nowe hasło musi zawierać co najmniej 8 znaków\n" +
+                                    "i co najmniej 1 znak specjalny i co najmniej jedną literę");
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

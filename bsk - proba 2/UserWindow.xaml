@@ -1,7 +1,7 @@
 ﻿<Window x:Class="bsk___proba_2.UserWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="UserWindow" Height="257.062" Width="343.667" Closed="Window_Closed">
+        Title="Więźniowie" Height="257.062" Width="343.667" Closed="Window_Closed">
     <Grid Margin="0,0,0,0">
         <ListBox x:Name="Tabele" HorizontalAlignment="Left" Height="175" Margin="20,38,0,0" VerticalAlignment="Top" Width="109" MouseDoubleClick="Tabele_MouseDoubleClick" SelectionChanged="Tabele_SelectionChanged"/>
         <Button Name="ButtonWyświetl" Content="Wyswietl tabelę" HorizontalAlignment="Left" Margin="175,35,0,0" VerticalAlignment="Top" Width="92" Click="Button_Click"/>

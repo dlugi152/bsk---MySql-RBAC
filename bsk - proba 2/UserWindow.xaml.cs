@@ -36,6 +36,7 @@ namespace bsk___proba_2
         private void OtwórzTabelę(string tabela)
         {
             OknoTabeli win2 = new OknoTabeli();
+            win2.Title = Tabele.SelectedItems[0].ToString();
             win2.OtworzTabele(Tabele.SelectedItems[0].ToString());
             if (RBACowyConnector.CanSelect(Tabele.SelectedItems[0].ToString()))
                 win2.Show();
