@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.27004.2008
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bsk - proba 2", "bsk - proba 2\bsk - proba 2.csproj", "{D0EF8B78-D5E3-4E62-BD1E-FD1B6B3A0489}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bsk - proba 2.Tests", "bsk - proba 2.Tests\bsk - proba 2.Tests.csproj", "{56A35AAA-7F8D-46DB-A9C4-39D353F80440}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,12 +15,11 @@ Global
 		{D0EF8B78-D5E3-4E62-BD1E-FD1B6B3A0489}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D0EF8B78-D5E3-4E62-BD1E-FD1B6B3A0489}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0EF8B78-D5E3-4E62-BD1E-FD1B6B3A0489}.Release|Any CPU.Build.0 = Release|Any CPU
-		{56A35AAA-7F8D-46DB-A9C4-39D353F80440}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{56A35AAA-7F8D-46DB-A9C4-39D353F80440}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{56A35AAA-7F8D-46DB-A9C4-39D353F80440}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{56A35AAA-7F8D-46DB-A9C4-39D353F80440}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A08E4218-A0A2-4628-95F1-21A3D7EFAA96}
 	EndGlobalSection
 EndGlobal

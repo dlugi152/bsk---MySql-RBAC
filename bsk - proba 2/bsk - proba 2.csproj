@@ -67,9 +67,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ObsługaBłędów.cs" />
-    <Compile Include="OknoHaslo.xaml.cs">
-      <DependentUpon>OknoHaslo.xaml</DependentUpon>
-    </Compile>
     <Compile Include="OknoTabeli.xaml.cs">
       <DependentUpon>OknoTabeli.xaml</DependentUpon>
     </Compile>
@@ -78,34 +75,13 @@
     </Compile>
     <Compile Include="RBACowyConnector.cs" />
     <Compile Include="Scanner.cs" />
-    <Compile Include="Stworz_Edytuj.xaml.cs">
-      <DependentUpon>Stworz_Edytuj.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UserPermission.xaml.cs">
-      <DependentUpon>UserPermission.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UserWindow.xaml.cs">
       <DependentUpon>UserWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Wybór Roli.xaml.cs">
-      <DependentUpon>Wybór Roli.xaml</DependentUpon>
-    </Compile>
-    <Page Include="Logowanie.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Logowanie.xaml.cs">
-      <DependentUpon>Logowanie.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Page Include="OknoHaslo.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="OknoTabeli.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -114,19 +90,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Stworz_Edytuj.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UserPermission.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="UserWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Wybór Roli.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

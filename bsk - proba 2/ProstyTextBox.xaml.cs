@@ -1,26 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace bsk___proba_2
 {
     /// <summary>
     /// Logika interakcji dla klasy ProstyTextBox.xaml
     /// </summary>
-    public partial class ProstyTextBox : Window
+    public partial class ProstyTextBox
     {
-        public ProstyTextBox()
-        {
+        public ProstyTextBox() {
             InitializeComponent();
         }
 
@@ -32,9 +20,7 @@ namespace bsk___proba_2
             WpisanyText.SelectAll();
         }
 
-        public string TextDoPrzekazania {
-            get { return WpisanyText.Text; }
-        }
+        public string TextDoPrzekazania => WpisanyText.Text;
 
         private void OKButton_Click(object sender, RoutedEventArgs e) {
             DialogResult = true;
