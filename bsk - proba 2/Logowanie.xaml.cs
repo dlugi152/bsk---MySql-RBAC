@@ -26,7 +26,7 @@ namespace bsk___proba_2
                 RBACowyConnector.Inicjalizuj(AdresTextBox.Text, //ip
                     loginTextBox.Text,
                     hasloTextBox.Password,
-                    PortTextBox.Text, wybranyPlik, HasłoCert.Password);
+                    PortTextBox.Text);
                 if (RBACowyConnector.PierwszeLogowanie())
                 {
                     while (true)

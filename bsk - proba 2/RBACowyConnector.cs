@@ -91,7 +91,7 @@ namespace bsk___proba_2
         {
         }
 
-        public static void Inicjalizuj(string serwer, string login, string haslo, string port,string plik,string hasloKlucza)
+        public static void Inicjalizuj(string serwer, string login, string haslo, string port)
         {
             RBACowyConnector.serwer = serwer;
             RBACowyConnector.login = login;
